@@ -11,7 +11,7 @@ interface Category {
 
 interface MenuItem {
   id: number
-  name: string
+  title: string
   category_id: number
   price: number
 }

@@ -3,6 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { PosPrinter, PosPrintData, PosPrintOptions } from 'electron-pos-printer'
+import { getMenuItems } from './db'
 
 function printBill(): void {
   const options: PosPrintOptions = {
@@ -88,6 +89,9 @@ function printBill(): void {
     }
   ]
 
+  // save data to datbase
+
+
   PosPrinter.print(data, options)
     .then(console.log)
     .catch((error) => {
@@ -144,7 +148,9 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
+  // printBill()
   ipcMain.on('print', () => printBill())
+  ipcMain.handle('getMenuItems', async () => getMenuItems())
 
   createWindow()
 

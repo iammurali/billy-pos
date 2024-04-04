@@ -7,9 +7,11 @@ import SearchComponent from './components/search-component'
 import { cn } from './lib/utils'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 import { Input } from './ui/input'
+import { IMenuItem } from 'src/types/sharedTypes'
 
 function App(): JSX.Element {
   const printIpcHandle = (): void => window.electron.ipcRenderer.send('print')
+  // const getMenuItemsIpcHandle = (): IMenuItem[] => window.electron.ipcRenderer.send('getMenuItems')
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -41,70 +43,10 @@ function App(): JSX.Element {
 
   const getMenuItems = async () => {
     try {
-      const result = [
-        {
-          id: 1,
-          name: 'Tea',
-          category_id: 1,
-          price: 10
-        },
-        {
-          id: 2,
-          name: 'Coffee',
-          category_id: 1,
-          price: 15
-        },
-        {
-          id: 3,
-          name: 'Iced Tea',
-          category_id: 1,
-          price: 20
-        },
-        {
-          id: 4,
-          name: 'Smoothie',
-          category_id: 1,
-          price: 25
-        },
-        {
-          id: 5,
-          name: 'Hot Chocolate',
-          category_id: 1,
-          price: 30
-        },
-        {
-          id: 6,
-          name: 'Milkshake',
-          category_id: 1,
-          price: 35
-        },
-        {
-          id: 7,
-          name: 'Soda',
-          category_id: 1,
-          price: 40
-        },
-        {
-          id: 8,
-          name: 'Lemonade',
-          category_id: 1,
-          price: 45
-        },
-        {
-          id: 9,
-          name: 'Fruit Juice',
-          category_id: 1,
-          price: 50
-        },
-        {
-          id: 10,
-          name: 'Water',
-          category_id: 1,
-          price: 55
-        }
-      ]
-      setMenuItems(result)
-      setFilteredData(result)
+      const dbItems: IMenuItem[] = await window.electron.ipcRenderer.invoke('getMenuItems')
+      console.log(dbItems, 'menuitems')
+      setMenuItems(dbItems)
+      setFilteredData(dbItems)
     } catch (error) {
       console.log('error::', error)
     }
@@ -194,189 +136,190 @@ function App(): JSX.Element {
   }
 
   return (
-      <div className={`flex w-full flex-row`} style={{ height: 'calc(100% - 1.75rem)' }}>
-        <div className="h-full w-1/2 min-w-96 px-2 py-2">
-          <div className="flex h-full flex-col">
-            {/* input */}
-            <div className="flex h-12 w-full flex-col">
-              {/* <Input
+    <div className={`flex w-full flex-row`} style={{ height: 'calc(100% - 1.75rem)' }}>
+      <div className="h-full w-1/2 min-w-96 px-2 py-2">
+        <div className="flex h-full flex-col">
+          {/* input */}
+          <div className="flex h-12 w-full flex-col">
+            {/* <Input
                   className="w-full p-6 border border-border rounded-none"
                   type="search"
                   placeholder="Press space to start search or click on the input box"
                   onChange={(e) => searchItem(e.target.value)}
                 /> */}
-              <SearchComponent data={filteredData} />
-            </div>
-            {/* cat and menu container */}
-            <div
-              className="border-border mt-2 flex flex-row border"
-              style={{ height: 'calc(100% - 3.5rem)' }}
-            >
-              {/* category */}
-              <div className="border-border min-w-28 border-r p-1">
+            <SearchComponent data={filteredData} addItemToBill={addItemToBill} />
+          </div>
+          {/* cat and menu container */}
+          <div
+            className="border-border mt-2 flex flex-row border"
+            style={{ height: 'calc(100% - 3.5rem)' }}
+          >
+            {/* category */}
+            <div className="border-border min-w-28 border-r p-1">
+              <div
+                onClick={() => {
+                  setSelectedCategory(-1)
+                  filterMenuItems(-1)
+                }}
+                className={cn('hover:bg-accent p-2', {
+                  'bg-accent': selectedCategory === -1 || !selectedCategory
+                })}
+              >
+                {'All'}
+              </div>
+              {categories.map((category) => (
                 <div
                   onClick={() => {
-                    setSelectedCategory(-1)
-                    filterMenuItems(-1)
+                    setSelectedCategory(category.id)
+                    filterMenuItems(category.id)
                   }}
-                  className={cn('hover:bg-accent p-2', {
-                    'bg-accent': selectedCategory === -1 || !selectedCategory
+                  className={cn('hover:bg-accent  p-2', {
+                    'border-border bg-accent border-y': selectedCategory === category.id
                   })}
+                  key={category.id}
                 >
-                  {'All'}
+                  {category.name.toLocaleUpperCase()}
                 </div>
-                {categories.map((category) => (
-                  <div
-                    onClick={() => {
-                      setSelectedCategory(category.id)
-                      filterMenuItems(category.id)
-                    }}
-                    className={cn('hover:bg-accent  p-2', {
-                      'border-border bg-accent border-y': selectedCategory === category.id
-                    })}
-                    key={category.id}
-                  >
-                    {category.name.toLocaleUpperCase()}
-                  </div>
-                ))}
-              </div>
-              {/* menu items */}
-              <div className="flex-1 cursor-pointer select-none overflow-y-auto p-1">
-                {filteredData.map((item) => (
-                  <div
-                    onClick={() => addItemToBill(item)}
-                    className="hover:bg-accent p-2"
-                    key={item.id}
-                  >
-                    {item.name} ::
-                    {' Rs.'}
-                    {item.price}
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
-          </div>
-        </div>
-        <div className="h-full w-1/2 min-w-96 py-2 pr-2">
-          <div className="border-border flex h-full flex-1 flex-col overflow-y-auto border">
-            <div className="border-border flex flex-row justify-between border-b p-4">
-              <div className="text-xl">Bill</div>
-              <div className="text-xl">Total: Rs. {TotalAmount}</div>
-            </div>
-            <div className="flex flex-1 flex-col overflow-y-scroll p-4">
-              <table className="bg-card table-auto">
-                <thead className="bg-muted">
-                  <tr>
-                    <th className="px-4 py-1 text-left font-semibold">Item</th>
-                    <th className="px-4 py-1 font-semibold">Qty</th>
-                    <th className="px-4 py-1 font-semibold">Price</th>
-                    <th className="px-2 py-1 font-semibold">Amount</th>
-                    <th className="px-4 py-1 font-semibold">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {billItems.map((billItem) => (
-                    <tr className="border-border select-none border-y" key={billItem.item.id}>
-                      <td className="px-4 py-1">{billItem.item.name}</td>
-                      <td className="flex flex-row px-2 py-1 text-center">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="mr-1"
-                          // className="px-2 bg-background rounded-sm border border-border-500"
-                          onClick={() => {
-                            const newQuantity = billItem.quantity - 1
-                            if (newQuantity < 1) return
-                            const updatedBillItems = billItems.map((item) => {
-                              if (item.item.id === billItem.item.id) {
-                                return { ...item, quantity: newQuantity }
-                              }
-                              return item
-                            })
-                            setBillItems(updatedBillItems)
-                          }}
-                        >
-                          <Minus />
-                        </Button>
-                        <Input
-                          className="borsder border-border w-8 rounded-sm p-1 text-center"
-                          style={{
-                            WebkitAppearance: 'none',
-                            margin: 0,
-                            MozAppearance: 'textfield'
-                          }}
-                          type="number"
-                          value={billItem.quantity}
-                          onChange={(e) => {
-                            const newQuantity = parseInt(e.target.value)
-                            const updatedBillItems = billItems.map((item) => {
-                              if (item.item.id === billItem.item.id) {
-                                return { ...item, quantity: newQuantity }
-                              }
-                              return item
-                            })
-                            setBillItems(updatedBillItems)
-                          }}
-                        />
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="ml-1"
-                          // className="px-2 bg-background rounded-sm border border-border-500"
-                          onClick={() => {
-                            const newQuantity = billItem.quantity + 1
-                            const updatedBillItems = billItems.map((item) => {
-                              if (item.item.id === billItem.item.id) {
-                                return { ...item, quantity: newQuantity }
-                              }
-                              return item
-                            })
-                            setBillItems(updatedBillItems)
-                          }}
-                        >
-                          <Plus />
-                        </Button>
-                      </td>
-                      <td className="px-4 py-1 text-center">{billItem.item.price}</td>
-                      <td className="px-4 py-1 text-center">
-                        {billItem.quantity * billItem.item.price}
-                      </td>
-                      <td className="px-4 py-1 text-center">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          // className="bg-background p-2 rounded-sm"
-                          onClick={() => {
-                            const newBillItems = billItems.filter(
-                              (item) => item.item.id !== billItem.item.id
-                            )
-                            setBillItems(newBillItems)
-                          }}
-                        >
-                          <Trash2 />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="border-border flex flex-row items-center justify-between border-t p-4">
-              <div>Sub Total</div>
-              <div>Rs. {TotalAmount}</div>
-              <Button variant={'default'} onClick={() => clearBill()}>
-                Clear Bill
-              </Button>
-              <Button variant={'default'} onClick={() => saveBill()}>
-                Save Bill
-              </Button>
-              <Button variant={'default'} onClick={() => printBill()}>
-                Print Bill
-              </Button>
+            {/* menu items */}
+            <div className="flex-1 cursor-pointer select-none overflow-y-auto p-1">
+              {filteredData.map((item) => (
+                <div
+                  onClick={() => addItemToBill(item)}
+                  className="hover:bg-accent p-2"
+                  key={item.id}
+                >
+                  {item.title} ::
+                  {' Rs.'}
+                  {item.price}
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
+      <div className="h-full w-1/2 min-w-96 py-2 pr-2">
+        <div className="border-border flex h-full flex-1 flex-col overflow-y-auto border">
+          <div className="border-border flex flex-row justify-between border-b p-4">
+            <div className="text-xl">Bill</div>
+            <div className="text-xl">Total: Rs. {TotalAmount}</div>
+          </div>
+          <div className="flex flex-1 flex-col overflow-y-scroll p-4">
+            <table className="bg-card table-auto">
+              <thead className="bg-muted">
+                <tr>
+                  <th className="px-4 py-1 text-left font-semibold">Item</th>
+                  <th className="px-4 py-1 font-semibold">Qty</th>
+                  <th className="px-4 py-1 font-semibold">Price</th>
+                  <th className="px-2 py-1 font-semibold">Amount</th>
+                  <th className="px-4 py-1 font-semibold">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {billItems.map((billItem) => (
+                  <tr className="border-border select-none border-y" key={billItem.item.id}>
+                    <td className="px-4 py-1">{billItem.item.title}</td>
+                    <td className="flex flex-row px-2 py-1 text-center">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="mr-1"
+                        // className="px-2 bg-background rounded-sm border border-border-500"
+                        onClick={() => {
+                          const newQuantity = billItem.quantity - 1
+                          if (newQuantity < 1) return
+                          const updatedBillItems = billItems.map((item) => {
+                            if (item.item.id === billItem.item.id) {
+                              return { ...item, quantity: newQuantity }
+                            }
+                            return item
+                          })
+                          setBillItems(updatedBillItems)
+                        }}
+                      >
+                        <Minus />
+                      </Button>
+                      <Input
+                        className="borsder border-border w-11 rounded-sm p-1 text-center"
+                        style={{
+                          WebkitAppearance: 'none',
+                          margin: 0,
+                          MozAppearance: 'textfield'
+                        }}
+                        type="tel"
+                        inputMode="numeric"
+                        value={billItem.quantity}
+                        onChange={(e) => {
+                          const newQuantity = parseInt(e.target.value)
+                          const updatedBillItems = billItems.map((item) => {
+                            if (item.item.id === billItem.item.id) {
+                              return { ...item, quantity: newQuantity }
+                            }
+                            return item
+                          })
+                          setBillItems(updatedBillItems)
+                        }}
+                      />
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="ml-1"
+                        // className="px-2 bg-background rounded-sm border border-border-500"
+                        onClick={() => {
+                          const newQuantity = billItem.quantity + 1
+                          const updatedBillItems = billItems.map((item) => {
+                            if (item.item.id === billItem.item.id) {
+                              return { ...item, quantity: newQuantity }
+                            }
+                            return item
+                          })
+                          setBillItems(updatedBillItems)
+                        }}
+                      >
+                        <Plus />
+                      </Button>
+                    </td>
+                    <td className="px-4 py-1 text-center">{billItem.item.price}</td>
+                    <td className="px-4 py-1 text-center">
+                      {billItem.quantity * billItem.item.price}
+                    </td>
+                    <td className="px-4 py-1 text-center">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        // className="bg-background p-2 rounded-sm"
+                        onClick={() => {
+                          const newBillItems = billItems.filter(
+                            (item) => item.item.id !== billItem.item.id
+                          )
+                          setBillItems(newBillItems)
+                        }}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="border-border flex flex-row items-center justify-between border-t p-4">
+            <div>Sub Total</div>
+            <div>Rs. {TotalAmount}</div>
+            <Button variant={'default'} onClick={() => clearBill()}>
+              Clear Bill
+            </Button>
+            <Button variant={'default'} onClick={() => saveBill()}>
+              Save Bill
+            </Button>
+            <Button variant={'default'} onClick={() => printBill()}>
+              Print Bill
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 

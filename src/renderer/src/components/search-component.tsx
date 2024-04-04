@@ -1,11 +1,41 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Input } from '../ui/input'
+import { IMenuItem } from 'src/types/sharedTypes'
 
-const SearchComponent = ({ data }: { data: MenuItem[] }): JSX.Element => {
+const SearchComponent = ({
+  data,
+  addItemToBill
+}: {
+  data: MenuItem[]
+  addItemToBill: (item: IMenuItem) => void
+}): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<MenuItem[]>([])
   const [selectedItem, setSelectedItem] = useState<number | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+
+    // Add event listener for keydown event
+    document.addEventListener('keydown', handleGlobalKeyDown)
+
+    // Cleanup function to remove the event listener when the component unmounts
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown)
+    }
+  }, [])
+
+  const handleGlobalKeyDown = (event: KeyboardEvent) => {
+    // Check if the pressed key is space and the focus is not on the input field
+    if (event.key === ' ' && document.activeElement !== inputRef.current) {
+      event.preventDefault() // Prevent default behavior of space key
+      inputRef.current?.focus() // Focus on the input field
+    }
+  }
 
   const handleSearch = (e: any): void => {
     const term = e.target.value
@@ -13,10 +43,11 @@ const SearchComponent = ({ data }: { data: MenuItem[] }): JSX.Element => {
 
     // Filter data based on the search term
     const filteredResults = data.filter((item) =>
-      item.name.toLowerCase().includes(term.toLowerCase())
+      item.title.toLowerCase().includes(term.toLowerCase())
     )
 
     setSearchResults(filteredResults)
+    setSelectedItem(0)
   }
 
   const handleItemClick = (index: number): void => {
@@ -24,6 +55,35 @@ const SearchComponent = ({ data }: { data: MenuItem[] }): JSX.Element => {
     setSelectedItem(index)
     // Optionally, you can perform some action when an item is selected
     console.log('Selected Item:', searchResults[index])
+    addItemToBill(searchResults[index] as IMenuItem)
+    setSearchTerm('')
+    setSelectedItem(0)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setSelectedItem((prevSelectedItem) => {
+        if (prevSelectedItem === null || prevSelectedItem === searchResults.length - 1) {
+          return 0
+        } else {
+          return prevSelectedItem + 1
+        }
+      })
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setSelectedItem((prevSelectedItem) => {
+        if (prevSelectedItem === null || prevSelectedItem === 0) {
+          return searchResults.length - 1
+        } else {
+          return prevSelectedItem - 1
+        }
+      })
+    } else if (e.key === 'Enter' && selectedItem !== null) {
+      console.log('selected item', selectedItem)
+      handleItemClick(selectedItem)
+      setSelectedItem(0)
+    }
   }
 
   return (
@@ -34,18 +94,20 @@ const SearchComponent = ({ data }: { data: MenuItem[] }): JSX.Element => {
         placeholder="Press space to start search or click on the input box"
         value={searchTerm}
         onChange={handleSearch}
+        onKeyDown={handleKeyDown}
+        ref={inputRef}
       />
       {searchTerm !== '' && (
         <ul className="bg-background mt-[3px] absolute z-50 border border-border w-full">
           {searchResults.map((result, index) => (
             <li
               className={`p-2 hover:bg-zinc-500 cursor-pointer ${
-                index === selectedItem ? 'bg-lightblue' : ''
+                index === selectedItem ? 'bg-secondary' : ''
               }`}
               key={index}
               onClick={() => handleItemClick(index)}
             >
-              {result.name}
+              {result.title}
             </li>
           ))}
         </ul>
