@@ -1,7 +1,18 @@
 import Database from 'better-sqlite3';
 import { IMenuItem } from '../types/sharedTypes'
+import path from 'path';
+import { app } from 'electron/main';
 
-const db = new Database('./coffeehouse.db', { verbose: console.log });
+console.log(process.resourcesPath, 'resourcepath', app.getAppPath())
+
+const dbPath =
+    process.env.NODE_ENV === "development"
+        ? './coffeehouse.db'
+        : path.join(process.resourcesPath, 'data/coffeehouse.db');
+
+console.log(dbPath, "DB PATH:::::::")
+
+const db = new Database(dbPath, {fileMustExist: true});
 
 db.pragma('journal_mode = WAL');
 let i=0

@@ -1,11 +1,14 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { PosPrinter, PosPrintData, PosPrintOptions } from 'electron-pos-printer'
 import { getMenuItems } from './db'
+import * as fs from 'fs'
+// import { IMenuItem } from './types/sharedTypes'
 
-function printBill(): void {
+async function printBill(billItems: BillItem[], totalAmount: number): Promise<void> {
+  console.log('event from frontend::::', billItems, totalAmount)
   const options: PosPrintOptions = {
     preview: true,
     margin: '0 0 0 0',
@@ -17,80 +20,59 @@ function printBill(): void {
   }
 
   const data: PosPrintData[] = [
-    {
-      type: 'image',
-      url: 'https://randomuser.me/api/portraits/men/43.jpg', // file path
-      position: 'center', // position of image: 'left' | 'center' | 'right'
-      width: '160px', // width of image in px; default: auto
-      height: '60px' // width of image in px; default: 50 or '50px'
-    },
+    // {
+    //   type: 'image',
+    //   url: 'https://randomuser.me/api/portraits/men/43.jpg', // file path
+    //   position: 'center', // position of image: 'left' | 'center' | 'right'
+    //   width: '160px', // width of image in px; default: auto
+    //   height: '60px' // width of image in px; default: 50 or '50px'
+    // },
     {
       type: 'text', // 'text' | 'barCode' | 'qrCode' | 'image' | 'table
-      value: 'SAMPLE HEADING',
-      style: { fontWeight: '700', textAlign: 'center', fontSize: '24px' }
+      value: 'Edaikazhinadu coffee house',
+      style: { fontWeight: '700', textAlign: 'center', fontSize: '18px' }
     },
     {
       type: 'text', // 'text' | 'barCode' | 'qrCode' | 'image' | 'table'
-      value: 'Secondary text',
-      style: { textDecoration: 'underline', fontSize: '10px', textAlign: 'center', color: 'red' }
+      value: 'vilambur, edaikazhinadu, TN - 603304',
+      style: { fontSize: '10px', textAlign: 'center' }
     },
-    {
-      type: 'barCode',
-      value: '023456789010',
-      height: '40', // height of barcode, applicable only to bar and QR codes
-      width: '2', // width of barcode, applicable only to bar and QR codes
-      displayValue: true, // Display value below barcode
-      fontsize: 12
-    },
-    {
-      type: 'qrCode',
-      value: 'https://github.com/Hubertformin/electron-pos-printer',
-      height: '55',
-      width: '55',
-      style: { margin: '10 20px 20 20px' }
-    },
+    // {
+    //   type: 'barCode',
+    //   value: '023456789010',
+    //   height: '40', // height of barcode, applicable only to bar and QR codes
+    //   width: '2', // width of barcode, applicable only to bar and QR codes
+    //   displayValue: true, // Display value below barcode
+    //   fontsize: 12
+    // },
+    // {
+    //   type: 'qrCode',
+    //   value: 'https://github.com/Hubertformin/electron-pos-printer',
+    //   height: '55',
+    //   width: '55',
+    //   style: { margin: '10 20px 20 20px' }
+    // },
     {
       type: 'table',
       // style the table
       style: { border: '1px solid #ddd' },
       // list of the columns to be rendered in the table header
-      tableHeader: ['Animal', 'Age'],
+      tableHeader: ['Name', 'Price', 'Qty', 'Amount'],
       // multi dimensional array depicting the rows and columns of the table body
-      tableBody: [
-        ['Cat', '2'],
-        ['Dog', '4'],
-        ['Horse', '12'],
-        ['Pig', '4']
-      ],
+      tableBody: [...billItems.map((item: BillItem)=> [item.item.title, item.item.price.toString(), item.quantity.toString(), (item.item.price * item.quantity).toString()])],
       // list of columns to be rendered in the table footer
-      tableFooter: ['Animal', 'Age'],
+      tableFooter: ['Total Bill', '', '', totalAmount.toString()],
       // custom style for the table header
-      tableHeaderStyle: { backgroundColor: '#000', color: 'white' },
+      tableHeaderStyle: {border: '0.5px solid #ddd' },
       // custom style for the table body
-      tableBodyStyle: { border: '0.5px solid #ddd' },
+      tableBodyStyle: { border: '0.5px solid #ddd', textAlign: 'left' },
       // custom style for the table footer
-      tableFooterStyle: { backgroundColor: '#000', color: 'white' }
+      tableFooterStyle: { border: '0.5px solid #ddd' }
     },
-    {
-      type: 'table',
-      style: { border: '1px solid #ddd' }, // style the table
-      // list of the columns to be rendered in the table header
-      tableHeader: [{ type: 'text', value: 'People' }],
-      // multi-dimensional array depicting the rows and columns of the table body
-      tableBody: [],
-      // list of columns to be rendered in the table footer
-      tableFooter: ['People', 'Image'],
-      // custom style for the table header
-      tableHeaderStyle: { backgroundColor: 'red', color: 'white' },
-      // custom style for the table body
-      tableBodyStyle: { border: '0.5px solid #ddd' },
-      // custom style for the table footer
-      tableFooterStyle: { backgroundColor: '#000', color: 'white' }
-    }
+
   ]
 
   // save data to datbase
-
 
   PosPrinter.print(data, options)
     .then(console.log)
@@ -131,6 +113,20 @@ function createWindow(): void {
   }
 }
 
+function debugPrint() {
+  try {
+    console.log('ADD DEBUG PRINT HERE')
+    // fs.appendFileSync(
+    //   'myfile.txt',
+    //   path.join(app.getAppPath(), '..', 'Resources', 'app.asar.unpacked', 'coffeehouse.db'),
+    //   'utf-8'
+    // )
+  } catch (e) {
+    alert('Failed to save the file !')
+  }
+  return path.join(app.getAppPath(), './coffeehouse.db')
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -149,8 +145,12 @@ app.whenReady().then(() => {
   ipcMain.on('ping', () => console.log('pong'))
 
   // printBill()
-  ipcMain.on('print', () => printBill())
+  ipcMain.handle('print', async (_event: any, billItems: BillItem[], totalAmount: number) => {
+    const result = await printBill(billItems, totalAmount)
+    return result
+  })
   ipcMain.handle('getMenuItems', async () => getMenuItems())
+  ipcMain.handle('debuggermethod', async () => debugPrint())
 
   createWindow()
 

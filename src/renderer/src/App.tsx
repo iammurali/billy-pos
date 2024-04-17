@@ -10,7 +10,7 @@ import { Input } from './ui/input'
 import { IMenuItem } from 'src/types/sharedTypes'
 
 function App(): JSX.Element {
-  const printIpcHandle = (): void => window.electron.ipcRenderer.send('print')
+  // const printIpcHandle = (): void => window.electron.ipcRenderer.invoke('print')
   // const getMenuItemsIpcHandle = (): IMenuItem[] => window.electron.ipcRenderer.send('getMenuItems')
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
@@ -47,6 +47,9 @@ function App(): JSX.Element {
       console.log(dbItems, 'menuitems')
       setMenuItems(dbItems)
       setFilteredData(dbItems)
+      const getDebugData = await window.electron.ipcRenderer.invoke('debuggermethod')
+      console.log('debug data', getDebugData)
+
     } catch (error) {
       console.log('error::', error)
     }
@@ -122,9 +125,11 @@ function App(): JSX.Element {
   }
 
   const printBill = async () => {
-    console.log('Printing bill...')
     try {
-      printIpcHandle()
+      console.log('Printing bill...', billItems, TotalAmount)
+      const billPrinted = await window.electron.ipcRenderer.invoke('print', billItems, TotalAmount)
+      console.log(billPrinted, 'bill printed')
+      // printIpcHandle(billItems)
     } catch (error: any) {
       console.log('Error printing bill:', error)
       toast('error printing bill', error)
