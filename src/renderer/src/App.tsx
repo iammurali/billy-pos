@@ -5,9 +5,10 @@ import { Button } from './ui/button'
 import { useEffect, useState } from 'react'
 import SearchComponent from './components/search-component'
 import { cn } from './lib/utils'
-import { Minus, Plus, Trash2 } from 'lucide-react'
+import { Minus, Plus, Printer, Trash2 } from 'lucide-react'
 import { Input } from './ui/input'
 import { IMenuItem } from 'src/types/sharedTypes'
+import { DraftBills } from './components/list-drafts-sheet'
 
 function App(): JSX.Element {
   // const printIpcHandle = (): void => window.electron.ipcRenderer.invoke('print')
@@ -19,6 +20,7 @@ function App(): JSX.Element {
   const [selectedCategory, setSelectedCategory] = useState<number>()
   const [billItems, setBillItems] = useState<BillItem[]>([])
   const [TotalAmount, setTotalAmount] = useState<number>(0.0)
+  const [draftBills, setDraftBills] = useState<DraftBill[]>([])
 
   // const truncateData = async () => {
   //   await dbService.truncateTables()
@@ -107,25 +109,80 @@ function App(): JSX.Element {
 
   const saveBill = async () => {
     try {
-      // const insertBill = await dbService.insertBill([TotalAmount, new Date()])
-      // console.log('INSERTED BILL:', insertBill)
-
-      // const billId = insertBill.lastInsertId
-      // console.log('BILL ID:', billId)
-      // insert billItems for the bill
-      // await dbService.bulkInsertBillItems(billItems, billId)
-      setBillItems([])
+      console.log('bill items::', billItems)
+      const result = await window.electron.ipcRenderer.invoke('saveBill', billItems, TotalAmount)
+      console.log(result, 'saved bill')
       toast('Bill saved successfully', {
         position: 'top-center',
         duration: 1000
       })
+      setBillItems([])
     } catch (error) {
       console.error('Error saving bill:', error)
     }
   }
 
+  const saveDraft = async () => {
+    const draftBills = localStorage.getItem('draftBills')
+    if (draftBills) {
+      const parsedDraftBills = JSON.parse(draftBills)
+      parsedDraftBills.push({billItems, billedDateandTime: new Date(), totalAmount: TotalAmount})
+      localStorage.setItem('draftBills', JSON.stringify(parsedDraftBills))
+      toast('Bill saved as draft', {
+        position: 'top-center',
+        duration: 1000
+      })
+    } else {
+      localStorage.setItem('draftBills', JSON.stringify([{billItems, billedDateandTime: new Date().toISOString(), totalAmount: TotalAmount}]))
+      toast('Bill saved as draft', {
+        position: 'top-center',
+        duration: 1000
+      })
+    }
+    setBillItems([])
+
+  }
+
+  const restoreDraft = (draftBill: DraftBill) => {
+    console.log(draftBill)
+    setBillItems(draftBill.billItems)
+  }
+
+  const deleteDraft = (draftBill: DraftBill) => {
+    console.log(draftBill)
+    const draftBills = localStorage.getItem('draftBills')
+    console.log('og draft', draftBills)
+    if (draftBills) {
+      const parsedDraftBills = JSON.parse(draftBills)
+      const filteredDraftBills = parsedDraftBills.filter((bill) => bill.billedDateandTime !== draftBill.billedDateandTime)
+      console.log(filteredDraftBills, 'filtered draft bills')
+      localStorage.setItem('draftBills', JSON.stringify(filteredDraftBills))
+      getDrafts()
+      toast('Bill deleted from draft', {
+        position: 'top-center',
+        duration: 1000
+      })
+    } else {
+      // error
+      console.log('No drafts found')
+    }
+  }
+
+  const getDrafts = () => {
+    const draftBills = localStorage.getItem('draftBills')
+    if (draftBills) {
+      const parsedDraftBills = JSON.parse(draftBills)
+      console.log(parsedDraftBills, 'draft bills')
+      // setBillItems(parsedDraftBills)
+      setDraftBills(parsedDraftBills)
+    } else {
+      setDraftBills([])
+    }
+  }
+
   const printBill = async () => {
     try {
+      saveBill()
       console.log('Printing bill...', billItems, TotalAmount)
       const billPrinted = await window.electron.ipcRenderer.invoke('print', billItems, TotalAmount)
       console.log(billPrinted, 'bill printed')
@@ -208,7 +265,13 @@ function App(): JSX.Element {
         <div className="border-border flex h-full flex-1 flex-col overflow-y-auto border">
           <div className="border-border flex flex-row justify-between border-b p-4">
             <div className="text-xl">Bill</div>
+            <div className='flex flex-row items-center'>
+            <Button className='mr-2' variant={'outline'} size="sm" onClick={() => getDrafts()}>
+              Bills
+            </Button>
+            <DraftBills onClickDrafts={() => getDrafts()} draftBills={draftBills} restoreDraft={restoreDraft} deleteDraft={deleteDraft} />
             <div className="text-xl">Total: Rs. {TotalAmount}</div>
+            </div>
           </div>
           <div className="flex flex-1 flex-col overflow-y-scroll p-4">
             <table className="bg-card table-auto">
@@ -310,16 +373,17 @@ function App(): JSX.Element {
             </table>
           </div>
           <div className="border-border flex flex-row items-center justify-between border-t p-4">
-            <div>Sub Total</div>
-            <div>Rs. {TotalAmount}</div>
             <Button variant={'default'} onClick={() => clearBill()}>
               Clear Bill
             </Button>
-            <Button variant={'default'} onClick={() => saveBill()}>
-              Save Bill
+            <Button variant={'default'} onClick={() => saveDraft()}>
+              Save Draft
             </Button>
-            <Button variant={'default'} onClick={() => printBill()}>
-              Print Bill
+            <Button variant={'default'} onClick={() => saveBill()}>
+              E Bill
+            </Button>
+            <Button variant={'default'}  onClick={() => printBill()}>
+              <Printer className='pr-2' /> Print Bill
             </Button>
           </div>
         </div>

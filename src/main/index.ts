@@ -3,9 +3,9 @@ import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { PosPrinter, PosPrintData, PosPrintOptions } from 'electron-pos-printer'
-import { getMenuItems } from './db'
+import { getMenuItems, addMenuItem, deleteMenuItem, updateMenuItem, saveBill } from './db'
 import * as fs from 'fs'
-// import { IMenuItem } from './types/sharedTypes'
+import { IMenuItem } from './types/sharedTypes'
 
 async function printBill(billItems: BillItem[], totalAmount: number): Promise<void> {
   console.log('event from frontend::::', billItems, totalAmount)
@@ -149,6 +149,22 @@ app.whenReady().then(() => {
     const result = await printBill(billItems, totalAmount)
     return result
   })
+  ipcMain.handle('addMenuItem', async (_event: any, menuItem: IMenuItem) => {
+    const result = await addMenuItem(menuItem)
+    console.log(result, 'inserted menu item')
+    return result
+  })
+  ipcMain.handle('updateMenuItem', async (_event: any, menuItem: IMenuItem) => {
+    const result = await updateMenuItem(menuItem)
+    console.log(result, 'updated menu item')
+    return result
+  })
+  ipcMain.handle('deleteMenuItem', async (_event: any, id: number) => {
+    const result = await deleteMenuItem(id)
+    console.log(result, 'deleted menu item')
+    return result
+  })
+  ipcMain.handle('saveBill',async (_event: any, billItems: BillItem[], totalAmount: number) => saveBill(billItems, totalAmount))
   ipcMain.handle('getMenuItems', async () => getMenuItems())
   ipcMain.handle('debuggermethod', async () => debugPrint())
 

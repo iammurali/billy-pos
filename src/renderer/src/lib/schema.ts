@@ -14,6 +14,7 @@ interface MenuItem {
   title: string
   category_id: number
   price: number
+  description?: string
 }
 
 interface BillItem {
@@ -27,4 +28,9 @@ interface Bill {
   total: number
   date: string
   items: BillItem[]
+}
+
+interface DraftBill {
+  billedDateandTime: string
+  billItems: BillItem[]
 }
