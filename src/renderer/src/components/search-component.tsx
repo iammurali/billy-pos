@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Input } from '../ui/input'
 import { IMenuItem } from 'src/types/sharedTypes'
+import { Search } from 'lucide-react'
 
 const SearchComponent = ({
   data,
@@ -88,8 +89,11 @@ const SearchComponent = ({
 
   return (
     <div className="relative">
+      <div className="relative ml-auto flex-1 md:grow-0">
+      <Search className="absolute left-2.5 top-4 h-4 w-4 text-primary" />
       <Input
-        className="w-full p-6 border border-border rounded-none"
+        
+        className="w-full px-8 py-6 border border-border rounded-none"
         type="search"
         placeholder="Press space to start search or click on the input box"
         value={searchTerm}
@@ -97,6 +101,7 @@ const SearchComponent = ({
         onKeyDown={handleKeyDown}
         ref={inputRef}
       />
+      </div>
       {searchTerm !== '' && (
         <ul className="bg-background mt-[3px] absolute z-50 border border-border w-full">
           {searchResults.map((result, index) => (

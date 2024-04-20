@@ -15,6 +15,7 @@ import {
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/ui/table'
+import { Archive, Clock, Recycle, Trash2 } from 'lucide-react'
 
 dayjs.extend(relativeTime)
 
@@ -23,26 +24,28 @@ export function DraftBills({ draftBills, restoreDraft, deleteDraft, onClickDraft
     <Sheet>
       <SheetTrigger asChild>
         <Button onClick={() => onClickDrafts()} className="mr-2" variant={'outline'} size="sm">
-          Drafts
+          <Archive size={13} className='mr-1' /> Drafts
         </Button>
       </SheetTrigger>
       <SheetContent className="p-0">
         <SheetHeader className="p-4 border-b">
-          <SheetTitle>Draft bills</SheetTitle>
-          <SheetDescription>Shows list of draft bills.</SheetDescription>
+          <SheetTitle className='flex flex-row items-center'><Archive className='mr-2' /> Draft bills</SheetTitle>
+          <SheetDescription>Click on restore to bring it back for billing and delete to remove from draft list.</SheetDescription>
         </SheetHeader>
         <div className="h-[90%] w-full overflow-y-scroll pt-2 pb-8 px-4">
-          {draftBills?.reverse().map((bill, index) => (
+          {draftBills?.map((bill, index) => (
             <div className="mb-1 p-2 flex flex-col border" key={index}>
-              <div className="flex flex-row justify-between items-center">
-                <div className="pr-2">{dayjs().to(dayjs(bill.billedDateandTime))}</div>
+              <div className="flex flex-row justify-between items-center bg-secondary p-2">
+                <div className="pr-2 flex flex-row items-center"><Clock size={20} className='mr-2' /> {dayjs().to(dayjs(bill.billedDateandTime))}</div>
                 <div>
                   <Button onClick={() => deleteDraft(bill)} className='mr-2' variant={'destructive'} size={'sm'}>
-                    Delete
+                    <Trash2  size={16} />
                   </Button>
-                  <Button onClick={() => restoreDraft(bill)} variant={'outline'} size={'sm'}>
-                    Restore
+                  <SheetClose>
+                  <Button className='' onClick={() => restoreDraft(bill)} variant={'default'} size={'sm'}>
+                    <Recycle size={16} /> Restore
                   </Button>
+                  </SheetClose>
                 </div>
               </div>
               <Table>
@@ -60,14 +63,14 @@ export function DraftBills({ draftBills, restoreDraft, deleteDraft, onClickDraft
                       <TableCell>{item.item.title}</TableCell>
                       <TableCell>{item.item.price}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell>{item.quantity * item.item.price}</TableCell>
+                      <TableCell className='text-right'>{item.quantity * item.item.price}</TableCell>
                     </TableRow>
                   ))}
                   <TableRow>
                     <TableCell>Total</TableCell>
                     <TableCell></TableCell>
                     <TableCell></TableCell>
-                    <TableCell>
+                    <TableCell className='font-bold text-right'>
                       {bill.billItems.reduce(
                         (acc, item) => acc + item.quantity * item.item.price,
                         0

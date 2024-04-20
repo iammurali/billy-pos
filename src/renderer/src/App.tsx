@@ -9,6 +9,7 @@ import { Minus, Plus, Printer, Trash2 } from 'lucide-react'
 import { Input } from './ui/input'
 import { IMenuItem } from 'src/types/sharedTypes'
 import { DraftBills } from './components/list-drafts-sheet'
+import { BilledBills } from './components/list-billed-sheet'
 
 function App(): JSX.Element {
   // const printIpcHandle = (): void => window.electron.ipcRenderer.invoke('print')
@@ -21,6 +22,7 @@ function App(): JSX.Element {
   const [billItems, setBillItems] = useState<BillItem[]>([])
   const [TotalAmount, setTotalAmount] = useState<number>(0.0)
   const [draftBills, setDraftBills] = useState<DraftBill[]>([])
+  const [billedBills, setBilledBills] = useState<any[]>([])
 
   // const truncateData = async () => {
   //   await dbService.truncateTables()
@@ -51,7 +53,6 @@ function App(): JSX.Element {
       setFilteredData(dbItems)
       const getDebugData = await window.electron.ipcRenderer.invoke('debuggermethod')
       console.log('debug data', getDebugData)
-
     } catch (error) {
       console.log('error::', error)
     }
@@ -126,21 +127,25 @@ function App(): JSX.Element {
     const draftBills = localStorage.getItem('draftBills')
     if (draftBills) {
       const parsedDraftBills = JSON.parse(draftBills)
-      parsedDraftBills.push({billItems, billedDateandTime: new Date(), totalAmount: TotalAmount})
+      parsedDraftBills.push({ billItems, billedDateandTime: new Date(), totalAmount: TotalAmount })
       localStorage.setItem('draftBills', JSON.stringify(parsedDraftBills))
       toast('Bill saved as draft', {
         position: 'top-center',
         duration: 1000
       })
     } else {
-      localStorage.setItem('draftBills', JSON.stringify([{billItems, billedDateandTime: new Date().toISOString(), totalAmount: TotalAmount}]))
+      localStorage.setItem(
+        'draftBills',
+        JSON.stringify([
+          { billItems, billedDateandTime: new Date().toISOString(), totalAmount: TotalAmount }
+        ])
+      )
       toast('Bill saved as draft', {
         position: 'top-center',
         duration: 1000
       })
     }
     setBillItems([])
-
   }
 
   const restoreDraft = (draftBill: DraftBill) => {
@@ -154,7 +159,9 @@ function App(): JSX.Element {
     console.log('og draft', draftBills)
     if (draftBills) {
       const parsedDraftBills = JSON.parse(draftBills)
-      const filteredDraftBills = parsedDraftBills.filter((bill) => bill.billedDateandTime !== draftBill.billedDateandTime)
+      const filteredDraftBills = parsedDraftBills.filter(
+        (bill) => bill.billedDateandTime !== draftBill.billedDateandTime
+      )
       console.log(filteredDraftBills, 'filtered draft bills')
       localStorage.setItem('draftBills', JSON.stringify(filteredDraftBills))
       getDrafts()
@@ -174,9 +181,23 @@ function App(): JSX.Element {
       const parsedDraftBills = JSON.parse(draftBills)
       console.log(parsedDraftBills, 'draft bills')
       // setBillItems(parsedDraftBills)
-      setDraftBills(parsedDraftBills)
+      setDraftBills(parsedDraftBills.reverse())
     } else {
       setDraftBills([])
+    }
+  }
+
+  const getBillsWithBillItems = async () => {
+    try {
+      const result = await window.electron.ipcRenderer.invoke('getBillsWithBillItems')
+      console.log(result, 'bills with bill items')
+      if (result) {
+        setBilledBills(result)
+      } else {
+        setBilledBills([])
+      }
+    } catch (error) {
+      console.log('error::', error)
     }
   }
 
@@ -265,12 +286,18 @@ function App(): JSX.Element {
         <div className="border-border flex h-full flex-1 flex-col overflow-y-auto border">
           <div className="border-border flex flex-row justify-between border-b p-4">
             <div className="text-xl">Bill</div>
-            <div className='flex flex-row items-center'>
-            <Button className='mr-2' variant={'outline'} size="sm" onClick={() => getDrafts()}>
+            <div className="flex flex-row items-center">
+              {/* <Button className='mr-2' variant={'outline'} size="sm" onClick={() => getDrafts()}>
               Bills
-            </Button>
-            <DraftBills onClickDrafts={() => getDrafts()} draftBills={draftBills} restoreDraft={restoreDraft} deleteDraft={deleteDraft} />
-            <div className="text-xl">Total: Rs. {TotalAmount}</div>
+            </Button> */}
+              <BilledBills onClickBills={() => getBillsWithBillItems()} billedBills={billedBills} />
+              <DraftBills
+                onClickDrafts={() => getDrafts()}
+                draftBills={draftBills}
+                restoreDraft={restoreDraft}
+                deleteDraft={deleteDraft}
+              />
+              <div className="text-xl">Total: Rs. {TotalAmount}</div>
             </div>
           </div>
           <div className="flex flex-1 flex-col overflow-y-scroll p-4">
@@ -373,17 +400,39 @@ function App(): JSX.Element {
             </table>
           </div>
           <div className="border-border flex flex-row items-center justify-between border-t p-4">
-            <Button variant={'default'} onClick={() => clearBill()}>
+            <Button
+              disabled={billItems.length === 0}
+              variant={'default'}
+              onClick={() => clearBill()}
+            >
+              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 mr-2">
+                <span className="text-xs">ctl</span>+space
+              </kbd>
               Clear Bill
             </Button>
-            <Button variant={'default'} onClick={() => saveDraft()}>
+            <Button
+              disabled={billItems.length === 0}
+              variant={'default'}
+              onClick={() => saveDraft()}
+            >
               Save Draft
             </Button>
-            <Button variant={'default'} onClick={() => saveBill()}>
+            <Button
+              disabled={billItems.length === 0}
+              variant={'default'}
+              onClick={() => saveBill()}
+            >
               E Bill
             </Button>
-            <Button variant={'default'}  onClick={() => printBill()}>
-              <Printer className='pr-2' /> Print Bill
+            <Button
+              disabled={billItems.length === 0}
+              variant={'default'}
+              onClick={() => printBill()}
+            >
+              Print Bill{' '}
+              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 ml-2">
+                <span className="text-xs">ctl</span>P
+              </kbd>              
             </Button>
           </div>
         </div>

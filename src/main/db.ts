@@ -106,3 +106,46 @@ export const saveBill = async (billItems: BillItem[], totalAmount: number) => {
     throw error
   }
 }
+
+const converFlatListToBillInterface = (rowList: any[]) => {
+  // convert flat list to bill interface each object in list will have single bill_id and multiple bill_items
+  const billItemsMap: { [key: number]: BillItem[] } = {}
+  rowList.forEach((billItem) => {
+    if (!billItemsMap[billItem.bill_id]) {
+      billItemsMap[billItem.bill_id] = []
+    }
+    billItemsMap[billItem.bill_id].push(billItem)
+  })
+
+  const bills: Bill[] = []
+  Object.keys(billItemsMap).forEach((billId) => {
+    const billItems = billItemsMap[billId]
+    const bill: Bill = {
+      id: Number(billId),
+      total: billItems.reduce((acc, billItem) => acc + billItem.amount, 0),
+      items: billItems,
+      date: billItems[0].created_at
+    }
+    bills.push(bill)
+  })
+
+  console.log(bills, 'bills')
+  return bills
+  
+  
+}
+export const getBillsWithBillItems = async () => {
+  try {
+    // get all bills with bill items i only want the last 10 bills
+    
+    const query = `SELECT * FROM bills JOIN bill_items ON bills.id = bill_items.bill_id JOIN menu_item ON bill_items.menu_item_id = menu_item.id`
+    const readQuery = db.prepare(query)
+    const rowList = readQuery.all()
+    const billItems = converFlatListToBillInterface(rowList)
+    console.log(billItems, 'bills with bill items')
+    return billItems
+  } catch (err) {
+    console.error(err, 'Get all bills::')
+    throw err
+  }
+}

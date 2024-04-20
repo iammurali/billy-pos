@@ -3,7 +3,7 @@ import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { PosPrinter, PosPrintData, PosPrintOptions } from 'electron-pos-printer'
-import { getMenuItems, addMenuItem, deleteMenuItem, updateMenuItem, saveBill } from './db'
+import { getMenuItems, addMenuItem, deleteMenuItem, updateMenuItem, saveBill, getBillsWithBillItems } from './db'
 import * as fs from 'fs'
 import { IMenuItem } from './types/sharedTypes'
 
@@ -165,6 +165,7 @@ app.whenReady().then(() => {
     return result
   })
   ipcMain.handle('saveBill',async (_event: any, billItems: BillItem[], totalAmount: number) => saveBill(billItems, totalAmount))
+  ipcMain.handle('getBillsWithBillItems', async () => getBillsWithBillItems())
   ipcMain.handle('getMenuItems', async () => getMenuItems())
   ipcMain.handle('debuggermethod', async () => debugPrint())
 
