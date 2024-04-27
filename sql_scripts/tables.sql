@@ -15,6 +15,7 @@ CREATE TABLE bills (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   total_amount REAL NOT NULL
+  invoice_number TEXT UNIQUE
 );
 
 CREATE TABLE bill_items (

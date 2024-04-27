@@ -22,20 +22,22 @@ import {
 } from '@/ui/form'
 import { Input } from '@/ui/input'
 import { toast } from 'sonner'
+import { IMenuItem } from 'src/types/sharedTypes'
 
 const formSchema = z.object({
   id: z.any(),
   title: z.string().min(2).max(50),
   description: z.string().min(2).max(50),
   price: z.coerce.number(),
-  category: z.coerce.number()
+  category: z.coerce.number(),
+  short_code: z.string().min(1).max(50)
 })
 
 export function EditMenu({
   item,
   getMenuItems
 }: {
-  item: MenuItem
+  item: IMenuItem
   getMenuItems: () => void
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -45,7 +47,8 @@ export function EditMenu({
       title: item.title,
       description: item.description,
       price: item.price,
-      category: item.category_id
+      category: item.category_id,
+      short_code: item.short_code
     }
   })
 
@@ -145,6 +148,20 @@ export function EditMenu({
                       <Input type="number" placeholder="Category" {...field} />
                     </FormControl>
                     <FormDescription>This is your menu item category.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="short_code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>short code</FormLabel>
+                    <FormControl>
+                      <Input placeholder="short_code" {...field} />
+                    </FormControl>
+                    <FormDescription>This is your short_code.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

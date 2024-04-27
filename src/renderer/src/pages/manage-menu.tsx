@@ -22,13 +22,14 @@ const formSchema = z.object({
   title: z.string().min(2).max(50),
   description: z.string().min(2).max(50),
   price: z.coerce.number(),
-  category: z.coerce.number()
+  category: z.coerce.number(),
+  short_code: z.string().min(1).max(50)
 })
 
 const ManageMenu: React.FC = () => {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  const [menuItems, setMenuItems] = useState<IMenuItem[]>([])
   // const [categories, setCategories] = useState<Category[]>([])
-  const [filteredData, setFilteredData] = useState<MenuItem[]>([])
+  const [filteredData, setFilteredData] = useState<IMenuItem[]>([])
 
   useEffect(() => {
     getMenuItems()
@@ -50,7 +51,8 @@ const ManageMenu: React.FC = () => {
       title: '',
       description: '',
       price: 0,
-      category: 1
+      category: 1,
+      short_code: ''
     }
   })
 
@@ -158,6 +160,20 @@ const ManageMenu: React.FC = () => {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="short_code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>short code</FormLabel>
+                  <FormControl>
+                    <Input placeholder="short code" {...field} />
+                  </FormControl>
+                  <FormDescription>This is shortcode.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <Button type="submit">Submit</Button>
           </form>
         </Form>
@@ -182,7 +198,7 @@ const ManageMenu: React.FC = () => {
                 <span className="font-medium">{item.title}</span>
                 <span className="text-sm text-muted-foreground">
                   {' '}
-                  Rs:{item.price} - {item.category_id}
+                  Rs:{item.price} - {item.category_id}-{item.short_code ? item.short_code : 'N/A'}
                 </span>
                 <div className="flex flex-row justify-end space-x-2">
                   <EditMenu getMenuItems={getMenuItems} item={item} />

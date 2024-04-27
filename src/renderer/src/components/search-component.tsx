@@ -43,9 +43,11 @@ const SearchComponent = ({
     setSearchTerm(term)
 
     // Filter data based on the search term
-    const filteredResults = data.filter((item) =>
-      item.title.toLowerCase().includes(term.toLowerCase())
-    )
+    const filteredResults = data.filter((item) => {
+      const hasShortCode = item.short_code?.toLowerCase() === term.toLowerCase()
+      const includesTitle = item.title.toLowerCase().includes(term.toLowerCase())
+      return hasShortCode || includesTitle
+    })
 
     setSearchResults(filteredResults)
     setSelectedItem(0)

@@ -26,5 +26,6 @@ interface Bill {
   id: number
   total: number
   date: string
+  invoice_number: string
   items: BillItem[]
 }

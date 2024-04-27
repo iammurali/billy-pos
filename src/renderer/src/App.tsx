@@ -10,6 +10,7 @@ import { Input } from './ui/input'
 import { IMenuItem } from 'src/types/sharedTypes'
 import { DraftBills } from './components/list-drafts-sheet'
 import { BilledBills } from './components/list-billed-sheet'
+// import { DiscountDialogButton } from './components/discount-dialog'
 
 function App(): JSX.Element {
   // const printIpcHandle = (): void => window.electron.ipcRenderer.invoke('print')
@@ -23,6 +24,8 @@ function App(): JSX.Element {
   const [TotalAmount, setTotalAmount] = useState<number>(0.0)
   const [draftBills, setDraftBills] = useState<DraftBill[]>([])
   const [billedBills, setBilledBills] = useState<any[]>([])
+  const [invoiceNumber, setInvoiceNumber] = useState<string>('')
+  const [billId, setBillId] = useState<number | null>(null)
 
   // const truncateData = async () => {
   //   await dbService.truncateTables()
@@ -33,6 +36,7 @@ function App(): JSX.Element {
     // addSeedData();
     getMenuItems()
     getCategories()
+    generateInvoiceNumber()
     // getBillsWithBillItems()
   }, [])
 
@@ -44,6 +48,18 @@ function App(): JSX.Element {
     total = parseFloat(total.toFixed(2))
     setTotalAmount(total)
   }, [billItems])
+
+  const generateInvoiceNumber = async () => {
+    // i want an invoice number that is serialized at the end of the number to make it easier to search
+    // it should take this format INV-2022-01-01-1000
+    const lastInvoiceNumber = await window.electron.ipcRenderer.invoke('getLastInvoiceNumber')
+    setInvoiceNumber(`${Number(lastInvoiceNumber)+1}`)
+  }
+
+  // remove this function as it is unnecessary
+  const incrementInvoiceNumber = () => {
+    generateInvoiceNumber()
+  }
 
   const getMenuItems = async () => {
     try {
@@ -111,16 +127,42 @@ function App(): JSX.Element {
   const saveBill = async () => {
     try {
       console.log('bill items::', billItems)
-      const result = await window.electron.ipcRenderer.invoke('saveBill', billItems, TotalAmount)
-      console.log(result, 'saved bill')
-      toast('Bill saved successfully', {
-        position: 'top-center',
-        duration: 1000
-      })
-      setBillItems([])
+
+      if (billId) {
+        const result = await window.electron.ipcRenderer.invoke(
+          'updateBill',
+          billItems,
+          TotalAmount,
+          invoiceNumber, 
+          billId
+        )
+        console.log(result, 'updated bill')
+        toast('Bill updated successfully', {
+          position: 'top-center',
+          duration: 1000
+        })
+       clearBill()
+      } else {
+        // save bill
+        setBillId(null)
+        const result = await window.electron.ipcRenderer.invoke(
+          'saveBill',
+          billItems,
+          TotalAmount,
+          invoiceNumber
+        )
+        console.log(result, 'saved bill')
+        toast('Bill saved successfully', {
+          position: 'top-center',
+          duration: 1000
+        })
+        clearBill()
+      }
+
     } catch (error) {
       console.error('Error saving bill:', error)
     }
+
   }
 
   const saveDraft = async () => {
@@ -145,7 +187,7 @@ function App(): JSX.Element {
         duration: 1000
       })
     }
-    setBillItems([])
+    clearBill()
   }
 
   const restoreDraft = (draftBill: DraftBill) => {
@@ -201,11 +243,20 @@ function App(): JSX.Element {
     }
   }
 
+  const restoreBill = (bill: Bill) => {
+    console.log(bill, ':::::::::bill to restore')
+    setInvoiceNumber(bill.invoice_number)
+    setBillItems(bill.items)
+    if(bill.id) {
+      setBillId(bill.id)
+    }
+  }
+
   const printBill = async () => {
     try {
-      saveBill()
       console.log('Printing bill...', billItems, TotalAmount)
       const billPrinted = await window.electron.ipcRenderer.invoke('print', billItems, TotalAmount)
+      saveBill()
       console.log(billPrinted, 'bill printed')
       // printIpcHandle(billItems)
     } catch (error: any) {
@@ -216,6 +267,13 @@ function App(): JSX.Element {
 
   const clearBill = () => {
     setBillItems([])
+    setBillId(null)
+    generateInvoiceNumber()
+  }
+
+  const addDiscount = (discount: number) => {
+    // discount should be in percentage
+    // setDiscount((discount / 100) * TotalAmount);
   }
 
   return (
@@ -284,20 +342,27 @@ function App(): JSX.Element {
       </div>
       <div className="h-full w-1/2 min-w-96 py-2 pr-2">
         <div className="border-border flex h-full flex-1 flex-col overflow-y-auto border">
-          <div className="border-border flex flex-row justify-between border-b p-4">
-            <div className="text-xl">Bill</div>
+          <div className="border-border flex flex-row justify-between border-b py-1 px-2">
+            <div className="text-base flex flex-col">
+              <div className="">
+                Invoice No:
+                <p className="text-muted-foreground float-right ml-1">{invoiceNumber}</p>
+              </div>
+
+              <div className="text-base font-bold mr-2">Total: Rs. {TotalAmount}</div>
+            </div>
             <div className="flex flex-row items-center">
-              {/* <Button className='mr-2' variant={'outline'} size="sm" onClick={() => getDrafts()}>
-              Bills
-            </Button> */}
-              <BilledBills onClickBills={() => getBillsWithBillItems()} billedBills={billedBills} />
+              <BilledBills
+                onClickBills={() => getBillsWithBillItems()}
+                billedBills={billedBills}
+                restoreBill={restoreBill}
+              />
               <DraftBills
                 onClickDrafts={() => getDrafts()}
                 draftBills={draftBills}
                 restoreDraft={restoreDraft}
                 deleteDraft={deleteDraft}
               />
-              <div className="text-xl">Total: Rs. {TotalAmount}</div>
             </div>
           </div>
           <div className="flex flex-1 flex-col overflow-y-scroll p-4">
@@ -399,24 +464,25 @@ function App(): JSX.Element {
               </tbody>
             </table>
           </div>
-          <div className="border-border flex flex-row items-center justify-between border-t p-4">
+          <div className="border-border flex flex-row items-center justify-between border-t p-2 bg-secondary ">
             <Button
               disabled={billItems.length === 0}
               variant={'default'}
               onClick={() => clearBill()}
             >
-              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 mr-2">
+              {/* <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 mr-2">
                 <span className="text-xs">ctl</span>+space
-              </kbd>
+              </kbd> */}
               Clear Bill
             </Button>
             <Button
-              disabled={billItems.length === 0}
+              disabled={billItems.length === 0 || billId !== null}
               variant={'default'}
               onClick={() => saveDraft()}
             >
               Save Draft
             </Button>
+            {/* <DiscountDialogButton /> */}
             <Button
               disabled={billItems.length === 0}
               variant={'default'}
@@ -430,9 +496,9 @@ function App(): JSX.Element {
               onClick={() => printBill()}
             >
               Print Bill{' '}
-              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 ml-2">
+              {/* <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 ml-2">
                 <span className="text-xs">ctl</span>P
-              </kbd>              
+              </kbd> */}
             </Button>
           </div>
         </div>

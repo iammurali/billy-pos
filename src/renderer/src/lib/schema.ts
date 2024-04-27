@@ -15,6 +15,7 @@ interface MenuItem {
   category_id: number
   price: number
   description?: string
+  short_code?: string
 }
 
 interface BillItem {
@@ -24,9 +25,10 @@ interface BillItem {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Bill {
-  id: number
-  total: number
-  date: string
+  id?: number
+  invoice_number: string
+  total?: number
+  date?: string
   items: BillItem[]
 }
 
