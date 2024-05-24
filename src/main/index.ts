@@ -4,7 +4,6 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { PosPrinter, PosPrintData, PosPrintOptions } from 'electron-pos-printer'
 import { getMenuItems, addMenuItem, deleteMenuItem, updateMenuItem, saveBill, getBillsWithBillItems, updateBill, getLastInvoiceNumber } from './db'
-import * as fs from 'fs'
 import { IMenuItem } from './types/sharedTypes'
 
 async function printBill(billItems: BillItem[], totalAmount: number): Promise<void> {

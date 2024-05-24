@@ -29,6 +29,7 @@ const formSchema = z.object({
 const ManageMenu: React.FC = () => {
   const [menuItems, setMenuItems] = useState<IMenuItem[]>([])
   // const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(false)
   const [filteredData, setFilteredData] = useState<IMenuItem[]>([])
 
   useEffect(() => {
@@ -37,10 +38,13 @@ const ManageMenu: React.FC = () => {
 
   const getMenuItems = async () => {
     try {
+      setLoading(true)
       const dbItems: IMenuItem[] = await window.electron.ipcRenderer.invoke('getMenuItems')
       setMenuItems(dbItems)
       setFilteredData(dbItems)
+      setLoading(false)
     } catch (error) {
+      setLoading(false)
       console.log('error::', error)
     }
   }

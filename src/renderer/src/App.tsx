@@ -5,7 +5,7 @@ import { Button } from './ui/button'
 import { useEffect, useState } from 'react'
 import SearchComponent from './components/search-component'
 import { cn } from './lib/utils'
-import { Minus, Plus, Printer, Trash2 } from 'lucide-react'
+import { Minus, Plus, Printer, PrinterIcon, Save, Trash2 } from 'lucide-react'
 import { Input } from './ui/input'
 import { IMenuItem } from 'src/types/sharedTypes'
 import { DraftBills } from './components/list-drafts-sheet'
@@ -314,7 +314,7 @@ function App(): JSX.Element {
                     setSelectedCategory(category.id)
                     filterMenuItems(category.id)
                   }}
-                  className={cn('hover:bg-accent  p-2', {
+                  className={cn('hover:bg-accent  p-2 text-sm', {
                     'border-border bg-accent border-y': selectedCategory === category.id
                   })}
                   key={category.id}
@@ -325,17 +325,23 @@ function App(): JSX.Element {
             </div>
             {/* menu items */}
             <div className="flex-1 cursor-pointer select-none overflow-y-auto p-1">
+              <div className='grid grid-cols-4 gap-2'>
               {filteredData.map((item) => (
                 <div
                   onClick={() => addItemToBill(item)}
-                  className="hover:bg-accent p-2"
+                  className="flex flex-col justify-between hover:bg-accent p-2 bg-background border border-1 h-20 text-sm"
                   key={item.id}
                 >
-                  {item.title} ::
+                  <div className='text-center'>
+                  {item.title}
+                  </div>
+                  <div className='text-right'>
                   {' Rs.'}
                   {item.price}
+                  </div>
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </div>
@@ -488,14 +494,15 @@ function App(): JSX.Element {
               variant={'default'}
               onClick={() => saveBill()}
             >
-              E Bill
+              <Save size={16} className='mr-1' /> {billId ? 'Update' : 'Save'}
             </Button>
             <Button
               disabled={billItems.length === 0}
               variant={'default'}
               onClick={() => printBill()}
             >
-              Print Bill{' '}
+              <PrinterIcon size={16} className='mr-1' />
+              Print
               {/* <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 ml-2">
                 <span className="text-xs">ctl</span>P
               </kbd> */}

@@ -34,7 +34,7 @@ export function DraftBills({ draftBills, restoreDraft, deleteDraft, onClickDraft
         </SheetHeader>
         <div className="h-[90%] w-full overflow-y-scroll pt-2 pb-8 px-4">
           {draftBills?.map((bill, index) => (
-            <div className="mb-1 p-2 flex flex-col border" key={index}>
+            <div className="mb-1 flex flex-col border" key={index}>
               <div className="flex flex-row justify-between items-center bg-secondary p-2">
                 <div className="pr-2 flex flex-row items-center"><Clock size={20} className='mr-2' /> {dayjs().to(dayjs(bill.billedDateandTime))}</div>
                 <div>

@@ -45,7 +45,7 @@ export function BilledBills({
         <div className="h-[90%] w-full overflow-y-scroll pt-2 pb-8 px-4">
           {billedBills?.map((bill, index) => (
             <div className="mb-1 p-2 flex flex-col border" key={index}>
-              <div className="flex flex-row justify-between items-center">
+              <div className="flex flex-row justify-between items-center bg-secondary">
                 <div className="pr-2 flex flex-col">
                   <p className='text-sm'>{bill.invoice_number}</p>
                   <p className='text-xs text-muted-foreground'>{dayjs.utc(bill.date, 'YYYY-MM-DD').format('DD/MM/YYYY hh:mm a')}</p>
