@@ -325,15 +325,15 @@ function App(): JSX.Element {
             </div>
             {/* menu items */}
             <div className="flex-1 cursor-pointer select-none overflow-y-auto p-1">
-              <div className='grid grid-cols-4 gap-2'>
+              <div className='grid grid-cols-3 gap-2'>
               {filteredData.map((item) => (
                 <div
                   onClick={() => addItemToBill(item)}
-                  className="flex flex-col justify-between hover:bg-accent p-2 bg-background border border-1 h-20 text-sm"
+                  className="flex flex-col justify-between hover:bg-primary p-2 bg-secondary border border-1 h-20"
                   key={item.id}
                 >
-                  <div className='text-center'>
-                  {item.title}
+                  <div className='text-left text-xs font-bold'>
+                  {item.title.toUpperCase()}
                   </div>
                   <div className='text-right'>
                   {' Rs.'}
