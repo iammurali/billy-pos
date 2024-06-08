@@ -2,14 +2,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { toast } from 'sonner'
 import { Button } from './ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/ui/dropdown-menu"
 import { useEffect, useState } from 'react'
 import SearchComponent from './components/search-component'
 import { cn } from './lib/utils'
-import { Minus, Plus, Printer, PrinterIcon, Save, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, Minus, Plus, Printer, PrinterIcon, Save, Trash2 } from 'lucide-react'
 import { Input } from './ui/input'
 import { IMenuItem } from 'src/types/sharedTypes'
 import { DraftBills } from './components/list-drafts-sheet'
 import { BilledBills } from './components/list-billed-sheet'
+import { Separator } from './ui/separator'
+
 // import { DiscountDialogButton } from './components/discount-dialog'
 
 function App(): JSX.Element {
@@ -324,18 +334,19 @@ function App(): JSX.Element {
               ))}
             </div>
             {/* menu items */}
-            <div className="flex-1 cursor-pointer select-none overflow-y-auto p-1">
+            <div className="flex-1 cursor-pointer select-none overflow-y-auto p-1 text-xs">
               <div className='grid grid-cols-3 gap-2'>
               {filteredData.map((item) => (
                 <div
                   onClick={() => addItemToBill(item)}
-                  className="flex flex-col justify-between hover:bg-primary p-2 bg-secondary border border-1 h-20"
+                  className="flex flex-col justify-between hover:bg-primary hover:dark:text-primary-foreground hover:text-card p-2 bg-muted border border-1 h-20"
                   key={item.id}
                 >
-                  <div className='text-left text-xs font-bold'>
+                  <div className='text-left'>
                   {item.title.toUpperCase()}
                   </div>
-                  <div className='text-right'>
+                  {/* <Separator orientation="horizontal" /> */}
+                  <div className='text-right font-bold text-muted-foreground'>
                   {' Rs.'}
                   {item.price}
                   </div>
@@ -369,6 +380,13 @@ function App(): JSX.Element {
                 restoreDraft={restoreDraft}
                 deleteDraft={deleteDraft}
               />
+              <DropdownMenu>
+                <DropdownMenuTrigger><Button className='pr-2' variant={'outline'}>Actions <ChevronDown /></Button></DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem>Discount</DropdownMenuItem>
+                  {/* <DropdownMenuItem>Billing</DropdownMenuItem> */}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           <div className="flex flex-1 flex-col overflow-y-scroll p-4">
@@ -385,7 +403,9 @@ function App(): JSX.Element {
               <tbody>
                 {billItems.map((billItem) => (
                   <tr className="border-border select-none border-y" key={billItem.item.id}>
-                    <td className="px-4 py-1">{billItem.item.title}</td>
+                    <td  className="px-4 py-1" 
+                    // onClick={() => openOptions(billItem.item)}
+                    >{billItem.item.title}</td>
                     <td className="flex flex-row px-2 py-1 text-center">
                       <Button
                         variant="outline"

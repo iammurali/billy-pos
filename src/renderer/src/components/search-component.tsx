@@ -105,7 +105,7 @@ const SearchComponent = ({
       />
       </div>
       {searchTerm !== '' && (
-        <ul className="bg-background mt-[3px] absolute z-50 border border-border w-full">
+        <ul className="bg-background mt-[3px] absolute z-50 border border-border w-full max-h-[88vh] overflow-y-auto">
           {searchResults.map((result, index) => (
             <li
               className={`p-2 hover:bg-zinc-500 cursor-pointer ${
