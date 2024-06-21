@@ -43,11 +43,19 @@ const SearchComponent = ({
     setSearchTerm(term)
 
     // Filter data based on the search term
-    const filteredResults = data.filter((item) => {
-      const hasShortCode = item.short_code?.toLowerCase() === term.toLowerCase()
-      const includesTitle = item.title.toLowerCase().includes(term.toLowerCase())
-      return hasShortCode || includesTitle
-    })
+    const filteredResults = data
+      .filter((item) => {
+        const hasShortCode = item.short_code?.toLowerCase() === term.toLowerCase()
+        const includesTitle = item.title.toLowerCase().includes(term.toLowerCase())
+        return hasShortCode || includesTitle
+      })
+      .sort((a, b) => {
+        const aHasShortCode = a.short_code?.toLowerCase() === term.toLowerCase()
+        const bHasShortCode = b.short_code?.toLowerCase() === term.toLowerCase()
+        if (aHasShortCode && !bHasShortCode) return -1
+        if (!aHasShortCode && bHasShortCode) return 1
+        return 0
+      })
 
     setSearchResults(filteredResults)
     setSelectedItem(0)
@@ -108,13 +116,18 @@ const SearchComponent = ({
         <ul className="bg-background mt-[3px] absolute z-50 border border-border w-full max-h-[88vh] overflow-y-auto">
           {searchResults.map((result, index) => (
             <li
-              className={`p-2 hover:bg-zinc-500 cursor-pointer ${
+              className={`p-2 hover:bg-zinc-500 cursor-pointer flex justify-between border ${
                 index === selectedItem ? 'bg-secondary' : ''
               }`}
               key={index}
               onClick={() => handleItemClick(index)}
             >
-              {result.title}
+              <div>
+              {result.title}{`${result.short_code? ` (short code: ${result.short_code})` : ''}`}
+              </div>
+              <div>
+                Rs.{result.price}
+              </div>
             </li>
           ))}
         </ul>

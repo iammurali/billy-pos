@@ -28,10 +28,10 @@ function Layout({ children }: { children: ReactNode }): JSX.Element {
               Reports
             </Link>
             <Link
-              to={'/bills'}
+              to={'/expenses'}
               className="text-foreground rounded-sm border-border px-2 py-1 text-center hover:bg-accent"
             >
-              Bills
+              Expenses
             </Link>
           </div>
           <ModeToggle />

@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { HashRouter, Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import ManageMenu from './pages/manage-menu'
+import Reports from './pages/reports'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -17,6 +18,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/manage-menu" element={<ManageMenu />} />
+            <Route path='/reports' element={<Reports />} />
           </Routes>
         </Layout>
       </HashRouter>

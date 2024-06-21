@@ -3,7 +3,7 @@ import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { PosPrinter, PosPrintData, PosPrintOptions } from 'electron-pos-printer'
-import { getMenuItems, addMenuItem, deleteMenuItem, updateMenuItem, saveBill, getBillsWithBillItems, updateBill, getLastInvoiceNumber } from './db'
+import { getMenuItems, addMenuItem, deleteMenuItem, updateMenuItem, saveBill, getBillsWithBillItems, updateBill, getLastInvoiceNumber, getSalesForThisMonth, getSalesForLast8weeks, getDailySales, getDistinctItemsSoldDailyAndTheirCountAndSum } from './db'
 import { IMenuItem } from './types/sharedTypes'
 
 async function printBill(billItems: BillItem[], totalAmount: number): Promise<void> {
@@ -167,6 +167,10 @@ app.whenReady().then(() => {
   ipcMain.handle('updateBill', async (_event: any, billItems: BillItem[], totalAmount: number, invoiceNumber: string, id: number) => updateBill(billItems, totalAmount, invoiceNumber, id))
   ipcMain.handle('getLastInvoiceNumber', async () => getLastInvoiceNumber())
   ipcMain.handle('getBillsWithBillItems', async () => getBillsWithBillItems())
+  ipcMain.handle('getTotalSalesForThisMonth', async () => getSalesForThisMonth())
+  ipcMain.handle('getDailySales', async () => getDailySales())
+  ipcMain.handle('getSalesForLast8weeks', async () => getSalesForLast8weeks())
+  ipcMain.handle('getDistinctItemsSoldDailyAndTheirCountAndSum', async () => getDistinctItemsSoldDailyAndTheirCountAndSum())
   ipcMain.handle('getMenuItems', async () => getMenuItems())
   ipcMain.handle('debuggermethod', async () => debugPrint())
 

@@ -186,27 +186,41 @@ const ManageMenu: React.FC = () => {
         <div className="overflow-y-scroll h-full">
           <h1 className="pl-5 pt-4 font-bold">Menu Items</h1>
           <div className="px-4 pt-4">
-          <Input
-                  className="w-full p-6 border border-border rounded-none"
-                  type="search"
-                  placeholder="Press space to start search or click on the input box"
-                  onChange={(e) => searchItem(e.target.value)}
-                />
+            <Input
+              className="w-full p-6 border border-border rounded-none"
+              type="search"
+              placeholder="Press space to start search or click on the input box"
+              onChange={(e) => searchItem(e.target.value)}
+            />
           </div>
           <ul className="p-4">
+            <li
+              className="p-2 border-b border-border flex items-center justify-between bg-gray-300"
+            >
+              <div className="text-sm w-[53%]">{'Item Name'}</div>
+              <div className="text-sm">{'Price'}</div>
+              <div className="text-sm">{'Category'}</div>
+              <div className="text-sm">{'Short code'}</div>
+              <div className="text-sm">
+                {/* <AddMenu getMenuItems={getMenuItems} /> */}
+                Actions
+              </div>
+            </li>
             {filteredData.map((item) => (
               <li
                 key={item.id}
                 className="p-2 border-b border-border flex items-center justify-between"
               >
-                <span className="font-medium">{item.title}</span>
-                <span className="text-sm text-muted-foreground">
-                  {' '}
-                  Rs:{item.price} - {item.category_id}-{item.short_code ? item.short_code : 'N/A'}
-                </span>
+                <div className="font-medium w-[50%]">{item.title}</div>
+                <div className="">Rs:{item.price}</div>
+                <div>{item.category_id}</div>
+                <div>{item.short_code ? item.short_code : 'N/A'}</div>
                 <div className="flex flex-row justify-end space-x-2">
                   <EditMenu getMenuItems={getMenuItems} item={item} />
-                  <button onClick={() => deleteMenuItem(item.id)} className="p-1.5 rounded-sm bg-secondary hover:bg-danger-foreground">
+                  <button
+                    onClick={() => deleteMenuItem(item.id)}
+                    className="p-1.5 rounded-sm bg-secondary hover:bg-danger-foreground"
+                  >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>

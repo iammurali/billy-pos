@@ -8,12 +8,22 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/ui/dropdown-menu"
+  DropdownMenuTrigger
+} from '@/ui/dropdown-menu'
 import { useEffect, useState } from 'react'
 import SearchComponent from './components/search-component'
 import { cn } from './lib/utils'
-import { ArrowDown, ArrowUp, ChevronDown, Minus, Plus, Printer, PrinterIcon, Save, Trash2 } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  Minus,
+  Plus,
+  Printer,
+  PrinterIcon,
+  Save,
+  Trash2
+} from 'lucide-react'
 import { Input } from './ui/input'
 import { IMenuItem } from 'src/types/sharedTypes'
 import { DraftBills } from './components/list-drafts-sheet'
@@ -63,7 +73,7 @@ function App(): JSX.Element {
     // i want an invoice number that is serialized at the end of the number to make it easier to search
     // it should take this format INV-2022-01-01-1000
     const lastInvoiceNumber = await window.electron.ipcRenderer.invoke('getLastInvoiceNumber')
-    setInvoiceNumber(`${Number(lastInvoiceNumber)+1}`)
+    setInvoiceNumber(`${Number(lastInvoiceNumber) + 1}`)
   }
 
   // remove this function as it is unnecessary
@@ -143,7 +153,7 @@ function App(): JSX.Element {
           'updateBill',
           billItems,
           TotalAmount,
-          invoiceNumber, 
+          invoiceNumber,
           billId
         )
         console.log(result, 'updated bill')
@@ -151,7 +161,7 @@ function App(): JSX.Element {
           position: 'top-center',
           duration: 1000
         })
-       clearBill()
+        clearBill()
       } else {
         // save bill
         setBillId(null)
@@ -168,11 +178,9 @@ function App(): JSX.Element {
         })
         clearBill()
       }
-
     } catch (error) {
       console.error('Error saving bill:', error)
     }
-
   }
 
   const saveDraft = async () => {
@@ -257,7 +265,7 @@ function App(): JSX.Element {
     console.log(bill, ':::::::::bill to restore')
     setInvoiceNumber(bill.invoice_number)
     setBillItems(bill.items)
-    if(bill.id) {
+    if (bill.id) {
       setBillId(bill.id)
     }
   }
@@ -335,23 +343,21 @@ function App(): JSX.Element {
             </div>
             {/* menu items */}
             <div className="flex-1 cursor-pointer select-none overflow-y-auto p-1 text-xs">
-              <div className='grid grid-cols-3 gap-2'>
-              {filteredData.map((item) => (
-                <div
-                  onClick={() => addItemToBill(item)}
-                  className="flex flex-col justify-between hover:bg-primary hover:dark:text-primary-foreground hover:text-card p-2 bg-muted border border-1 h-20"
-                  key={item.id}
-                >
-                  <div className='text-left'>
-                  {item.title.toUpperCase()}
+              <div className="grid grid-cols-3 gap-2">
+                {filteredData.map((item) => (
+                  <div
+                    onClick={() => addItemToBill(item)}
+                    className="flex flex-col justify-between hover:bg-primary hover:dark:text-primary-foreground hover:text-card p-2 bg-muted border border-1 h-20"
+                    key={item.id}
+                  >
+                    <div className="text-left">{item.title.toUpperCase()}</div>
+                    {/* <Separator orientation="horizontal" /> */}
+                    <div className="text-right font-bold text-muted-foreground">
+                      {' Rs.'}
+                      {item.price}
+                    </div>
                   </div>
-                  {/* <Separator orientation="horizontal" /> */}
-                  <div className='text-right font-bold text-muted-foreground'>
-                  {' Rs.'}
-                  {item.price}
-                  </div>
-                </div>
-              ))}
+                ))}
               </div>
             </div>
           </div>
@@ -360,13 +366,13 @@ function App(): JSX.Element {
       <div className="h-full w-1/2 min-w-96 py-2 pr-2">
         <div className="border-border flex h-full flex-1 flex-col overflow-y-auto border">
           <div className="border-border flex flex-row justify-between border-b py-1 px-2">
-            <div className="text-base flex flex-col">
+            <div className="text-base flex flex-col items-center justify-center">
               <div className="">
                 Invoice No:
-                <p className="text-muted-foreground float-right ml-1">{invoiceNumber}</p>
+                <p className="font-bold float-right ml-1">{invoiceNumber}</p>
               </div>
 
-              <div className="text-base font-bold mr-2">Total: Rs. {TotalAmount}</div>
+              {/* <div className="text-base font-bold mr-2">Total: Rs. {TotalAmount}</div> */}
             </div>
             <div className="flex flex-row items-center">
               <BilledBills
@@ -381,7 +387,11 @@ function App(): JSX.Element {
                 deleteDraft={deleteDraft}
               />
               <DropdownMenu>
-                <DropdownMenuTrigger><Button className='pr-2' variant={'outline'}>Actions <ChevronDown /></Button></DropdownMenuTrigger>
+                <DropdownMenuTrigger>
+                  <Button className="pr-2" variant={'outline'}>
+                    Actions <ChevronDown />
+                  </Button>
+                </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem>Discount</DropdownMenuItem>
                   {/* <DropdownMenuItem>Billing</DropdownMenuItem> */}
@@ -392,7 +402,7 @@ function App(): JSX.Element {
           <div className="flex flex-1 flex-col overflow-y-scroll p-4">
             <table className="bg-card table-auto">
               <thead className="bg-muted">
-                <tr>
+                <tr className="text-sm">
                   <th className="px-4 py-1 text-left font-semibold">Item</th>
                   <th className="px-4 py-1 font-semibold">Qty</th>
                   <th className="px-4 py-1 font-semibold">Price</th>
@@ -403,12 +413,15 @@ function App(): JSX.Element {
               <tbody>
                 {billItems.map((billItem) => (
                   <tr className="border-border select-none border-y" key={billItem.item.id}>
-                    <td  className="px-4 py-1" 
-                    // onClick={() => openOptions(billItem.item)}
-                    >{billItem.item.title}</td>
+                    <td
+                      className="px-4 py-1 text-sm"
+                      // onClick={() => openOptions(billItem.item)}
+                    >
+                      {billItem.item.title}
+                    </td>
                     <td className="flex flex-row px-2 py-1 text-center">
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="icon"
                         className="mr-1"
                         // className="px-2 bg-background rounded-sm border border-border-500"
@@ -448,7 +461,7 @@ function App(): JSX.Element {
                         }}
                       />
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="icon"
                         className="ml-1"
                         // className="px-2 bg-background rounded-sm border border-border-500"
@@ -490,43 +503,47 @@ function App(): JSX.Element {
               </tbody>
             </table>
           </div>
-          <div className="border-border flex flex-row items-center justify-between border-t p-2 bg-secondary ">
-            <Button
-              disabled={billItems.length === 0}
-              variant={'default'}
-              onClick={() => clearBill()}
-            >
-              {/* <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 mr-2">
+          <div className='border-t bg-secondary'>
+            <div className="text-base font-bold mr-2 text-right p-2">Total: Rs. {TotalAmount}</div>
+
+            <div className="flex flex-row items-center justify-between px-2 pb-2">
+              <Button
+                disabled={billItems.length === 0}
+                variant={'default'}
+                onClick={() => clearBill()}
+              >
+                {/* <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 mr-2">
                 <span className="text-xs">ctl</span>+space
               </kbd> */}
-              Clear Bill
-            </Button>
-            <Button
-              disabled={billItems.length === 0 || billId !== null}
-              variant={'default'}
-              onClick={() => saveDraft()}
-            >
-              Save Draft
-            </Button>
-            {/* <DiscountDialogButton /> */}
-            <Button
-              disabled={billItems.length === 0}
-              variant={'default'}
-              onClick={() => saveBill()}
-            >
-              <Save size={16} className='mr-1' /> {billId ? 'Update' : 'Save'}
-            </Button>
-            <Button
-              disabled={billItems.length === 0}
-              variant={'default'}
-              onClick={() => printBill()}
-            >
-              <PrinterIcon size={16} className='mr-1' />
-              Print
-              {/* <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 ml-2">
+                Clear Bill
+              </Button>
+              <Button
+                disabled={billItems.length === 0 || billId !== null}
+                variant={'default'}
+                onClick={() => saveDraft()}
+              >
+                Save Draft
+              </Button>
+              {/* <DiscountDialogButton /> */}
+              <Button
+                disabled={billItems.length === 0}
+                variant={'default'}
+                onClick={() => saveBill()}
+              >
+                <Save size={16} className="mr-1" /> {billId ? 'Update' : 'Save'}
+              </Button>
+              <Button
+                disabled={billItems.length === 0}
+                variant={'default'}
+                onClick={() => printBill()}
+              >
+                <PrinterIcon size={16} className="mr-1" />
+                Print
+                {/* <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 ml-2">
                 <span className="text-xs">ctl</span>P
               </kbd> */}
-            </Button>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
