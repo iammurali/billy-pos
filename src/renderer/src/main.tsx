@@ -19,6 +19,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             <Route path="/" element={<App />} />
             <Route path="/manage-menu" element={<ManageMenu />} />
             <Route path='/reports' element={<Reports />} />
+            <Route path='/expenses' element={<Reports />} />
           </Routes>
         </Layout>
       </HashRouter>

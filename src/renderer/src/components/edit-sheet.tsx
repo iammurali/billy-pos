@@ -81,9 +81,9 @@ export function EditMenu({
   return (
     <Sheet>
       <SheetTrigger>
-        <button className="p-1.5 rounded-sm bg-secondary hover:bg-primary-foreground">
+        <Button variant={'secondary'} className="p-1.5 rounded-sm">
           <PencilIcon className="h-4 w-4" />
-        </button>
+        </Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
