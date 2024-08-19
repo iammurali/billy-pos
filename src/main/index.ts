@@ -58,13 +58,32 @@ async function printBill(billItems: BillItem[], totalAmount: number): Promise<vo
       // list of the columns to be rendered in the table header
       tableHeader: ['Name', 'Price', 'Qty', 'Amount'],
       // multi dimensional array depicting the rows and columns of the table body
-      tableBody: [...billItems.map((item: BillItem)=> [item.item.title, item.item.price.toString(), item.quantity.toString(), (item.item.price * item.quantity).toString()])],
+      tableBody: billItems.map((item: BillItem)=> [{
+        type: 'text',
+        value: item.item.title.toUpperCase(),
+        style: { fontWeight: '700', textAlign: 'left', fontSize: '9px' }
+      },
+      {
+        type: 'text',
+        value: item.item.price.toString(),
+        style: { fontWeight: '700', textAlign: 'center', fontSize: '9px' }
+      },
+      {
+        type: 'text',
+        value: item.quantity.toString(),
+        style: { fontWeight: '700', textAlign: 'center', fontSize: '9px' }
+      },
+      {
+        type: 'text',
+        value: (item.item.price * item.quantity).toString(),
+        style: { fontWeight: '700', textAlign: 'center', fontSize: '9px' }
+      }]),
       // list of columns to be rendered in the table footer
       tableFooter: ['Total Bill', '', '', totalAmount.toString()],
       // custom style for the table header
-      tableHeaderStyle: {border: '0.5px solid #ddd' },
+      tableHeaderStyle: {border: '0.5px solid #ddd', fontWeight: '700', textAlign: 'left', fontSize: '9px' },
       // custom style for the table body
-      tableBodyStyle: { border: '0.5px solid #ddd', textAlign: 'left' },
+      tableBodyStyle: { border: '0.5px solid #ddd', textAlign: 'left', fontSize: '8px' },
       // custom style for the table footer
       tableFooterStyle: { border: '0.5px solid #ddd' }
     },

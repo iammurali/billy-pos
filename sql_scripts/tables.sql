@@ -27,3 +27,18 @@ CREATE TABLE bill_items (
   FOREIGN KEY (bill_id) REFERENCES bills (id),
   FOREIGN KEY (menu_item_id) REFERENCES menu_item (id)
 );
+
+
+CREATE TABLE expenses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  category_id INTEGER NOT NULL,
+  description TEXT,
+  amount DECIMAL(10,2) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (category_id) REFERENCES expense_categories (id)
+);
+
+CREATE TABLE expense_categories (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT UNIQUE NOT NULL
+);
