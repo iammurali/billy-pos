@@ -195,7 +195,7 @@ export const getBillsWithBillItems = async () => {
   try {
     // get all bills with bill items i only want the last 10 bills
 
-    const query = `SELECT * FROM bills JOIN bill_items ON bills.id = bill_items.bill_id JOIN menu_item ON bill_items.menu_item_id = menu_item.id`
+    const query = `SELECT b.*, bi.*, mi.* FROM bills b INNER JOIN bill_items bi ON b.id = bi.bill_id INNER JOIN menu_item mi ON bi.menu_item_id = mi.id ORDER BY b.created_at DESC LIMIT 50;`
     const readQuery = db.prepare(query)
     const rowList = readQuery.all()
     console.log(rowList, 'Get all bills::')
@@ -228,14 +228,14 @@ export const getLastInvoiceNumber = async () => {
 export const getSalesForThisMonth = async () => {
   try {
     const query = `
-  SELECT 
+  SELECT
     strftime('%Y-%m', created_at) AS month,
     SUM(total_amount) AS total_sales
-  FROM 
+  FROM
     bills
-  WHERE 
+  WHERE
     created_at >= date('now', '-12 months')
-  GROUP BY 
+  GROUP BY
     month
   ORDER BY
     month DESC;
@@ -253,7 +253,7 @@ export const getSalesForThisMonth = async () => {
 export const getDailySales = async () => {
   try {
     const query = `
-    SELECT 
+    SELECT
     strftime('%Y-%m-%d', created_at) AS date,
     strftime('%w', created_at) AS day_number,
     CASE strftime('%w', created_at)
@@ -266,11 +266,11 @@ export const getDailySales = async () => {
       WHEN '6' THEN 'Saturday'
     END AS day_name,
     SUM(total_amount) AS total_sales
-  FROM 
+  FROM
     bills
-  WHERE 
+  WHERE
     date(created_at) >= date('now', '-20 days')
-  GROUP BY 
+  GROUP BY
     date
   ORDER BY
     date DESC;
@@ -288,14 +288,14 @@ export const getDailySales = async () => {
 export const getSalesForLast8weeks = async () => {
   try {
     const query = `
-  SELECT 
+  SELECT
     strftime('%Y-%W', created_at) AS week,
     SUM(total_amount) AS total_sales
-  FROM 
+  FROM
     bills
-  WHERE 
+  WHERE
     created_at >= datetime('now', '-56 days')
-  GROUP BY 
+  GROUP BY
     week
   ORDER BY
     week DESC;
@@ -338,6 +338,92 @@ ORDER BY
     return rowList
   } catch (error) {
     console.error(error, 'Error getting distinct items sold and their count and sum::')
+    throw error
+  }
+}
+
+export const getExpenseCategories = async () => {
+  try {
+    const query = `
+  SELECT
+    id,
+    name
+  FROM
+    expense_categories;
+`
+    const readQuery = db.prepare(query)
+    const rowList = readQuery.all()
+    console.log(rowList, 'Get expense categories')
+    return rowList
+  } catch (error) {
+    console.error(error, 'Error getting expense categories')
+    throw error
+  }
+}
+
+export const addExpenseCategory = async (name: string) => {
+  try {
+    const insertQuery = db.prepare(`INSERT INTO expense_categories (name) VALUES (?)`)
+    const result = insertQuery.run(name)
+    return result
+  } catch (error) {
+    console.error(error, 'Add expense category::')
+    throw error
+  }
+}
+
+export const addMenuItemCategory = async (name: string) => {
+  try {
+    const insertQuery = db.prepare(`INSERT INTO categories (name) VALUES (?)`)
+    const result = insertQuery.run(name)
+    return result
+  } catch (error) {
+    console.error(error, 'Add menu item category::')
+    throw error
+  }
+}
+
+export const addExpense = async (
+  title: string,
+  category_id: number,
+  description: string,
+  amount: number
+) => {
+  try {
+    const insertQuery = db.prepare(
+      `INSERT INTO expenses (title,category_id, description, amount) VALUES (?,?,?,?);`
+    )
+    const result = insertQuery.run(title, category_id, description, amount)
+    return result
+  } catch (error) {
+    console.error(error, 'Add expense::')
+    throw error
+  }
+}
+
+export const getExpenses = async () => {
+  try {
+    const query = `
+  SELECT
+  expenses.id,
+  expenses.title,
+  expenses.description,
+  expenses.amount,
+  expenses.created_at,
+  expense_categories.name AS category_name
+FROM
+  expenses
+JOIN
+  expense_categories
+ON
+  expenses.category_id = expense_categories.id;
+`
+    const readQuery = db.prepare(query)
+    const rowList = readQuery.all()
+    console.log(rowList, 'Get expense categories')
+    return rowList
+  } catch (error) {
+    console.error(error, 'Error getting expense categories')
     throw error
   }
 }

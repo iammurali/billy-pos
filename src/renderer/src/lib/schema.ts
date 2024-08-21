@@ -36,3 +36,17 @@ interface DraftBill {
   billedDateandTime: string
   billItems: BillItem[]
 }
+
+interface ExpenseCategory {
+  id: number
+  name: string
+}
+
+interface Expense {
+  id: number;
+  title: string;
+  description: string | null;
+  amount: number;
+  created_at: string; // or Date if you parse it into a Date object
+  category_name: string;
+}

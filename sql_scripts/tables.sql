@@ -32,6 +32,7 @@ CREATE TABLE bill_items (
 CREATE TABLE expenses (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   category_id INTEGER NOT NULL,
+  title TEXT NOT NULL,
   description TEXT,
   amount DECIMAL(10,2) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

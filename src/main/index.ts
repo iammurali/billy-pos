@@ -3,7 +3,24 @@ import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { PosPrinter, PosPrintData, PosPrintOptions } from 'electron-pos-printer'
-import { getMenuItems, addMenuItem, deleteMenuItem, updateMenuItem, saveBill, getBillsWithBillItems, updateBill, getLastInvoiceNumber, getSalesForThisMonth, getSalesForLast8weeks, getDailySales, getDistinctItemsSoldDailyAndTheirCountAndSum } from './db'
+import {
+  getMenuItems,
+  addMenuItem,
+  deleteMenuItem,
+  updateMenuItem,
+  saveBill,
+  getBillsWithBillItems,
+  updateBill,
+  getLastInvoiceNumber,
+  getSalesForThisMonth,
+  getSalesForLast8weeks,
+  getDailySales,
+  getDistinctItemsSoldDailyAndTheirCountAndSum,
+  getExpenseCategories,
+  addExpenseCategory,
+  addExpense,
+  getExpenses
+} from './db'
 import { IMenuItem } from './types/sharedTypes'
 
 async function printBill(billItems: BillItem[], totalAmount: number): Promise<void> {
@@ -58,36 +75,42 @@ async function printBill(billItems: BillItem[], totalAmount: number): Promise<vo
       // list of the columns to be rendered in the table header
       tableHeader: ['Name', 'Price', 'Qty', 'Amount'],
       // multi dimensional array depicting the rows and columns of the table body
-      tableBody: billItems.map((item: BillItem)=> [{
-        type: 'text',
-        value: item.item.title.toUpperCase(),
-        style: { fontWeight: '700', textAlign: 'left', fontSize: '9px' }
-      },
-      {
-        type: 'text',
-        value: item.item.price.toString(),
-        style: { fontWeight: '700', textAlign: 'center', fontSize: '9px' }
-      },
-      {
-        type: 'text',
-        value: item.quantity.toString(),
-        style: { fontWeight: '700', textAlign: 'center', fontSize: '9px' }
-      },
-      {
-        type: 'text',
-        value: (item.item.price * item.quantity).toString(),
-        style: { fontWeight: '700', textAlign: 'center', fontSize: '9px' }
-      }]),
+      tableBody: billItems.map((item: BillItem) => [
+        {
+          type: 'text',
+          value: item.item.title.toUpperCase(),
+          style: { fontWeight: '700', textAlign: 'left', fontSize: '9px' }
+        },
+        {
+          type: 'text',
+          value: item.item.price.toString(),
+          style: { fontWeight: '700', textAlign: 'center', fontSize: '9px' }
+        },
+        {
+          type: 'text',
+          value: item.quantity.toString(),
+          style: { fontWeight: '700', textAlign: 'center', fontSize: '9px' }
+        },
+        {
+          type: 'text',
+          value: (item.item.price * item.quantity).toString(),
+          style: { fontWeight: '700', textAlign: 'center', fontSize: '9px' }
+        }
+      ]),
       // list of columns to be rendered in the table footer
       tableFooter: ['Total Bill', '', '', totalAmount.toString()],
       // custom style for the table header
-      tableHeaderStyle: {border: '0.5px solid #ddd', fontWeight: '700', textAlign: 'left', fontSize: '9px' },
+      tableHeaderStyle: {
+        border: '0.5px solid #ddd',
+        fontWeight: '700',
+        textAlign: 'left',
+        fontSize: '9px'
+      },
       // custom style for the table body
       tableBodyStyle: { border: '0.5px solid #ddd', textAlign: 'left', fontSize: '8px' },
       // custom style for the table footer
       tableFooterStyle: { border: '0.5px solid #ddd' }
-    },
-
+    }
   ]
 
   // save data to datbase
@@ -182,16 +205,42 @@ app.whenReady().then(() => {
     console.log(result, 'deleted menu item')
     return result
   })
-  ipcMain.handle('saveBill',async (_event: any, billItems: BillItem[], totalAmount: number, invoiceNumber: string) => saveBill(billItems, totalAmount, invoiceNumber))
-  ipcMain.handle('updateBill', async (_event: any, billItems: BillItem[], totalAmount: number, invoiceNumber: string, id: number) => updateBill(billItems, totalAmount, invoiceNumber, id))
+  ipcMain.handle(
+    'saveBill',
+    async (_event: any, billItems: BillItem[], totalAmount: number, invoiceNumber: string) =>
+      saveBill(billItems, totalAmount, invoiceNumber)
+  )
+  ipcMain.handle(
+    'updateBill',
+    async (
+      _event: any,
+      billItems: BillItem[],
+      totalAmount: number,
+      invoiceNumber: string,
+      id: number
+    ) => updateBill(billItems, totalAmount, invoiceNumber, id)
+  )
   ipcMain.handle('getLastInvoiceNumber', async () => getLastInvoiceNumber())
   ipcMain.handle('getBillsWithBillItems', async () => getBillsWithBillItems())
   ipcMain.handle('getTotalSalesForThisMonth', async () => getSalesForThisMonth())
   ipcMain.handle('getDailySales', async () => getDailySales())
   ipcMain.handle('getSalesForLast8weeks', async () => getSalesForLast8weeks())
-  ipcMain.handle('getDistinctItemsSoldDailyAndTheirCountAndSum', async () => getDistinctItemsSoldDailyAndTheirCountAndSum())
+  ipcMain.handle('getDistinctItemsSoldDailyAndTheirCountAndSum', async () =>
+    getDistinctItemsSoldDailyAndTheirCountAndSum()
+  )
   ipcMain.handle('getMenuItems', async () => getMenuItems())
+  ipcMain.handle('getExpenseCategories', async () => getExpenseCategories())
   ipcMain.handle('debuggermethod', async () => debugPrint())
+  ipcMain.handle('addExpenseCategory', async (_event: any, name: string) =>
+    addExpenseCategory(name)
+  )
+  ipcMain.handle(
+    'addExpense',
+    async (_event: any, title: string, category_id: number, description: string, amount: number) =>
+      addExpense(title, category_id, description, amount)
+  )
+  ipcMain.handle('getExpenses', async () => getExpenses())
+
 
   createWindow()
 
