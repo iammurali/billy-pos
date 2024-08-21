@@ -427,3 +427,77 @@ ON
     throw error
   }
 }
+
+export const getExpensesByFilter = async (type: 'today' | 'week' | 'month') => {
+  try {
+    let condition
+    if (type == 'today') {
+      condition = `DATE(expenses.created_at) = DATE('now');`
+    }
+    if (type == 'week') {
+      condition = `DATE(expenses.created_at) >= DATE('now', 'weekday 0', '-6 days')
+    AND DATE(expenses.created_at) <= DATE('now', 'weekday 0', '+0 days');`
+    }
+    if (type == 'month') {
+      condition = `strftime('%Y-%m', expenses.created_at) = strftime('%Y-%m', 'now');`
+    }
+    if (condition) {
+      const query = `
+      SELECT
+        expenses.id,
+        expenses.title,
+        expenses.description,
+        expenses.amount,
+        expenses.created_at,
+        expense_categories.name AS category_name
+    FROM
+      expenses
+    JOIN
+      expense_categories
+    ON
+      expenses.category_id = expense_categories.id
+    WHERE
+    ${condition}
+  `
+      const readQuery = db.prepare(query)
+      const rowList = readQuery.all()
+      console.log(rowList, 'Get expense categories')
+      return rowList
+    }
+  } catch (error) {
+    console.error(error, 'Error getting expense categories')
+    throw error
+  }
+}
+
+export const getTotalSpentByFilter = async (type: 'today' | 'week' | 'month') => {
+  try {
+    let condition
+    if (type == 'today') {
+      condition = `DATE(expenses.created_at) = DATE('now');`
+    }
+    if (type == 'week') {
+      condition = `DATE(expenses.created_at) >= DATE('now', 'weekday 0', '-6 days')
+    AND DATE(expenses.created_at) <= DATE('now', 'weekday 0', '+0 days');`
+    }
+    if (type == 'month') {
+      condition = `strftime('%Y-%m', expenses.created_at) = strftime('%Y-%m', 'now');`
+    }
+      const query = `
+      SELECT
+      SUM(amount) AS total_amount
+      FROM
+        expenses
+      WHERE
+      ${condition}
+  `
+  console.log(query)
+    const readQuery = db.prepare(query)
+    const rowList = readQuery.all()
+    console.log(rowList, type)
+    return rowList
+  } catch (error) {
+    console.error(error, 'Error getting expense total')
+    throw error
+  }
+}

@@ -19,7 +19,8 @@ import {
   getExpenseCategories,
   addExpenseCategory,
   addExpense,
-  getExpenses
+  getExpenses,
+  getTotalSpentByFilter
 } from './db'
 import { IMenuItem } from './types/sharedTypes'
 
@@ -240,7 +241,9 @@ app.whenReady().then(() => {
       addExpense(title, category_id, description, amount)
   )
   ipcMain.handle('getExpenses', async () => getExpenses())
-
+  ipcMain.handle('getTotalSpentByFilter', async (_event: any, type: 'today' | 'week' | 'month') =>
+    getTotalSpentByFilter(type)
+  )
 
   createWindow()
 
