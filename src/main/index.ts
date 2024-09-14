@@ -26,8 +26,10 @@ import { IMenuItem } from './types/sharedTypes'
 
 async function printBill(billItems: BillItem[], totalAmount: number): Promise<void> {
   console.log('event from frontend::::', billItems, totalAmount)
+    // Get the path to the image file
+  const imagePath = path.join(app.getAppPath(), 'src', 'renderer', 'src', 'assets', 'coffeehouselogo.jpg')
   const options: PosPrintOptions = {
-    preview: true,
+    // preview: true,
     margin: '0 0 0 0',
     copies: 1,
     // printerName: 'XP-80C',
@@ -37,13 +39,13 @@ async function printBill(billItems: BillItem[], totalAmount: number): Promise<vo
   }
 
   const data: PosPrintData[] = [
-    // {
-    //   type: 'image',
-    //   url: 'https://randomuser.me/api/portraits/men/43.jpg', // file path
-    //   position: 'center', // position of image: 'left' | 'center' | 'right'
-    //   width: '160px', // width of image in px; default: auto
-    //   height: '60px' // width of image in px; default: 50 or '50px'
-    // },
+    {
+      type: 'image',
+      path: imagePath, // Use the local file path
+      position: 'center', // position of image: 'left' | 'center' | 'right'
+      width: '160px', // width of image in px; default: auto
+      height: '60px' // width of image in px; default: 50 or '50px'
+    },
     {
       type: 'text', // 'text' | 'barCode' | 'qrCode' | 'image' | 'table
       value: 'Edaikazhinadu coffee house',
@@ -72,7 +74,7 @@ async function printBill(billItems: BillItem[], totalAmount: number): Promise<vo
     {
       type: 'table',
       // style the table
-      style: { border: '1px solid #ddd' },
+      // style: { border: '1px solid #ddd' },
       // list of the columns to be rendered in the table header
       tableHeader: ['Name', 'Price', 'Qty', 'Amount'],
       // multi dimensional array depicting the rows and columns of the table body
@@ -80,7 +82,7 @@ async function printBill(billItems: BillItem[], totalAmount: number): Promise<vo
         {
           type: 'text',
           value: item.item.title.toUpperCase(),
-          style: { fontWeight: '700', textAlign: 'left', fontSize: '9px' }
+          style: { fontWeight: '800', textAlign: 'left', fontSize: '10px' }
         },
         {
           type: 'text',
@@ -102,17 +104,110 @@ async function printBill(billItems: BillItem[], totalAmount: number): Promise<vo
       tableFooter: ['Total Bill', '', '', totalAmount.toString()],
       // custom style for the table header
       tableHeaderStyle: {
-        border: '0.5px solid #ddd',
+        // border: '0.5px solid #ddd',
         fontWeight: '700',
         textAlign: 'left',
         fontSize: '9px'
       },
       // custom style for the table body
-      tableBodyStyle: { border: '0.5px solid #ddd', textAlign: 'left', fontSize: '8px' },
+      tableBodyStyle: {
+        border: '0.5px solid #ddd',
+        textAlign: 'left',
+        fontSize: '8px',
+        fontFamily: 'monospace',
+        padding: '0',
+      },
       // custom style for the table footer
       tableFooterStyle: { border: '0.5px solid #ddd' }
     }
   ]
+  // const data: PosPrintData[] = [
+  //   {
+  //     type: 'text',
+  //     value: 'Edaikazhinadu coffee house',
+  //     style: {
+  //       fontWeight: '700',
+  //       textAlign: 'center',
+  //       fontSize: '14px', // Adjusted font size for better fit
+  //       marginBottom: '5px' // Added margin for spacing
+  //     }
+  //   },
+  //   {
+  //     type: 'text',
+  //     value: 'vilambur, edaikazhinadu, TN - 603304',
+  //     style: {
+  //       fontSize: '10px',
+  //       textAlign: 'center',
+  //       marginBottom: '10px' // Added margin for spacing
+  //     }
+  //   },
+  //   {
+  //     type: 'table',
+  //     style: { border: '0.5px solid #ddd' }, // Adjusted border style
+  //     tableHeader: ['Name', 'Price', 'Qty', 'Amount'],
+  //     tableBody: billItems.map((item: BillItem) => [
+  //       {
+  //         type: 'text',
+  //         value: item.item.title.toUpperCase(),
+  //         style: {
+  //           fontWeight: '800',
+  //           textAlign: 'left',
+  //           fontSize: '8px', // Adjusted font size
+  //           paddingRight: '5px' // Added padding for alignment
+  //         }
+  //       },
+  //       {
+  //         type: 'text',
+  //         value: item.item.price.toString(),
+  //         style: {
+  //           fontWeight: '800',
+  //           textAlign: 'center',
+  //           fontSize: '8px' // Adjusted font size
+  //         }
+  //       },
+  //       {
+  //         type: 'text',
+  //         value: item.quantity.toString(),
+  //         style: {
+  //           fontWeight: '800',
+  //           textAlign: 'center',
+  //           fontSize: '8px' // Adjusted font size
+  //         }
+  //       },
+  //       {
+  //         type: 'text',
+  //         value: (item.item.price * item.quantity).toString(),
+  //         style: {
+  //           fontWeight: '800',
+  //           textAlign: 'center',
+  //           fontSize: '8px' // Adjusted font size
+  //         }
+  //       }
+  //     ]),
+  //     tableFooter: ['Total Bill', '', '', totalAmount.toString()],
+  //     tableHeaderStyle: {
+  //       border: '0.5px solid #ddd',
+  //       fontWeight: '700',
+  //       textAlign: 'left',
+  //       fontSize: '8px', // Adjusted font size
+  //       padding: '-2px 0' // Added padding for spacing
+  //     },
+  //     tableBodyStyle: {
+  //       border: '0.5px solid #ddd',
+  //       textAlign: 'left',
+  //       fontSize: '7px', // Adjusted font size
+  //       fontFamily: 'monospace',
+  //       padding: '- 0' // Added padding for spacing
+  //     },
+  //     tableFooterStyle: {
+  //       border: '0.5px solid #ddd',
+  //       fontWeight: '700',
+  //       fontSize: '8px', // Adjusted font size
+  //       padding: '-2px 0' // Added padding for spacing
+  //     }
+  //   }
+  // ];
+
 
   // save data to datbase
 
