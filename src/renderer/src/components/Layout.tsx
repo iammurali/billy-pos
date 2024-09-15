@@ -33,6 +33,12 @@ function Layout({ children }: { children: ReactNode }): JSX.Element {
             >
               Expenses
             </Link>
+            <Link
+              to={'/mobile'}
+              className="text-foreground rounded-sm border-border px-2 py-1 text-center hover:bg-accent"
+            >
+              Mobile
+            </Link>
           </div>
           <ModeToggle />
         </div>

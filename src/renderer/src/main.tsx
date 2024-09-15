@@ -10,6 +10,7 @@ import Layout from './components/Layout'
 import ManageMenu from './pages/manage-menu'
 import Reports from './pages/reports'
 import { Expenses } from './pages/expenses'
+import { Mobile } from './pages/mobile'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -21,6 +22,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             <Route path="/manage-menu" element={<ManageMenu />} />
             <Route path='/reports' element={<Reports />} />
             <Route path='/expenses' element={<Expenses />} />
+            <Route path='/mobile' element={<Mobile />} />
           </Routes>
         </Layout>
       </HashRouter>

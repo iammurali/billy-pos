@@ -1,6 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { networkInterfaces } from 'os';
 import icon from '../../resources/icon.png?asset'
 import { PosPrinter, PosPrintData, PosPrintOptions } from 'electron-pos-printer'
 import {
@@ -478,6 +479,18 @@ app.whenReady().then(() => {
       console.error('Error updating order status:', error);
       throw error;
     }
+  });
+  ipcMain.handle('get-ip-address', () => {
+    const nets: any = networkInterfaces();
+    for (const name of Object.keys(nets)) {
+      for (const net of nets[name]) {
+        // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+        if (net.family === 'IPv4' && !net.internal) {
+          return net.address;
+        }
+      }
+    }
+    return 'Unable to determine IP address';
   });
 
 
