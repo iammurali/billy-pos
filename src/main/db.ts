@@ -2,6 +2,7 @@ import Database from 'better-sqlite3'
 import { IMenuItem } from '../types/sharedTypes'
 import path from 'path'
 import { app } from 'electron/main'
+import { DateTime } from 'luxon'
 
 console.log(process.resourcesPath, 'resourcepath', app.getAppPath())
 
@@ -401,6 +402,17 @@ export const addExpense = async (
   }
 }
 
+export const deleteExpenseById = async (id: string) => {
+  try {
+    const insertQuery = db.prepare(`DELETE FROM expenses WHERE id = ?;`)
+    const result = insertQuery.run(id)
+    return result
+  } catch (error) {
+    console.error(error, 'Add expense::')
+    throw error
+  }
+}
+
 export const getExpenses = async () => {
   try {
     const query = `
@@ -441,8 +453,8 @@ export const getExpensesByFilter = async (type: 'today' | 'week' | 'month') => {
     if (type == 'month') {
       condition = `strftime('%Y-%m', expenses.created_at) = strftime('%Y-%m', 'now');`
     }
-    if (condition) {
-      const query = `
+
+    const query = `
       SELECT
         expenses.id,
         expenses.title,
@@ -459,11 +471,10 @@ export const getExpensesByFilter = async (type: 'today' | 'week' | 'month') => {
     WHERE
     ${condition}
   `
-      const readQuery = db.prepare(query)
-      const rowList = readQuery.all()
-      console.log(rowList, 'Get expense categories')
-      return rowList
-    }
+    const readQuery = db.prepare(query)
+    const rowList = readQuery.all()
+    console.log(rowList, 'Get expense categories')
+    return rowList
   } catch (error) {
     console.error(error, 'Error getting expense categories')
     throw error
@@ -483,7 +494,7 @@ export const getTotalSpentByFilter = async (type: 'today' | 'week' | 'month') =>
     if (type == 'month') {
       condition = `strftime('%Y-%m', expenses.created_at) = strftime('%Y-%m', 'now');`
     }
-      const query = `
+    const query = `
       SELECT
       SUM(amount) AS total_amount
       FROM
@@ -491,7 +502,7 @@ export const getTotalSpentByFilter = async (type: 'today' | 'week' | 'month') =>
       WHERE
       ${condition}
   `
-  console.log(query)
+    console.log(query)
     const readQuery = db.prepare(query)
     const rowList = readQuery.all()
     console.log(rowList, type)
@@ -500,4 +511,142 @@ export const getTotalSpentByFilter = async (type: 'today' | 'week' | 'month') =>
     console.error(error, 'Error getting expense total')
     throw error
   }
+}
+
+interface IOrderItem {
+  menu_item_id: number
+  quantity: number
+  price: number
+}
+
+interface IOrder {
+  total_amount: number
+  order_number: string
+  invoice_number: string | null
+  sent_to_kitchen: boolean
+  sent_for_billing: boolean
+  items: IOrderItem[]
+}
+
+export const saveOrder = (order: IOrder) => {
+  const insertOrderQuery = db.prepare(`
+    INSERT INTO orders (order_number, total_amount, sent_to_kitchen, sent_for_billing)
+    VALUES (?, ?, ?, ?)
+  `)
+
+  const insertOrderItemQuery = db.prepare(`
+    INSERT INTO order_items (order_id, menu_item_id, quantity, price)
+    VALUES (?, ?, ?, ?)
+  `)
+
+  const transaction = db.transaction((order: IOrder) => {
+    const orderResult = insertOrderQuery.run(
+      order.order_number,
+      order.total_amount,
+      order.sent_to_kitchen ? 1 : 0,
+      order.sent_for_billing ? 1 : 0
+    )
+    const orderId = orderResult.lastInsertRowid
+
+    for (const item of order.items) {
+      insertOrderItemQuery.run(orderId, item.menu_item_id, item.quantity, item.price)
+    }
+
+    return orderId
+  })
+
+  return transaction(order)
+}
+
+// Function to get an order by id
+export const getOrderById = (orderId: number) => {
+  const orderQuery = db.prepare(`
+    SELECT * FROM orders WHERE id = ?
+  `)
+
+  const orderItemsQuery = db.prepare(`
+    SELECT * FROM order_items WHERE order_id = ?
+  `)
+
+  const order = orderQuery.get(orderId)
+  if (!order) return null
+
+  const orderItems = orderItemsQuery.all(orderId)
+
+  return { ...order, items: orderItems }
+}
+
+export const updateOrderStatus = (
+  orderId: number,
+  sentToKitchen: boolean,
+  sentForBilling: boolean,
+  invoiceNumber: string | null = null
+) => {
+  const updateQuery = db.prepare(`
+    UPDATE orders
+    SET sent_to_kitchen = ?,
+        sent_for_billing = ?,
+        invoice_number = COALESCE(?, invoice_number),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `)
+
+  try {
+    const result = updateQuery.run(
+      sentToKitchen ? 1 : 0,
+      sentForBilling ? 1 : 0,
+      invoiceNumber,
+      orderId
+    )
+    console.log(`Order ${orderId} status updated. Changes: ${result.changes}`)
+    return result.changes > 0
+  } catch (error) {
+    console.error('Error updating order status:', error)
+    throw error
+  }
+}
+
+export const getAllOrders = () => {
+  const ordersQuery = db.prepare(`
+    SELECT
+      o.id,
+      o.order_number,
+      o.total_amount,
+      o.sent_to_kitchen,
+      o.sent_for_billing,
+      datetime(o.created_at) as created_at,
+      GROUP_CONCAT(mi.id || ',' || oi.quantity || ',' || oi.price || ',' || mi.title, '|') as items_data
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN menu_item mi ON oi.menu_item_id = mi.id
+    GROUP BY o.id
+    ORDER BY o.created_at DESC
+  `)
+
+  const orders = ordersQuery.all()
+  console.log(orders, 'ALL ORDERS')
+
+  const processedOrders = orders.map((order: any) => {
+    const items = order.items_data.split('|').map((item) => {
+      const [menu_item_id, quantity, price, title] = item.split(',')
+      return {
+        menu_item_id: parseInt(menu_item_id),
+        quantity: parseInt(quantity),
+        price: parseFloat(price),
+        title
+      }
+    })
+
+    return {
+      id: order.id,
+      order_number: order.order_number,
+      total_amount: order.total_amount,
+      sent_to_kitchen: Boolean(order.sent_to_kitchen),
+      sent_for_billing: Boolean(order.sent_for_billing),
+      created_at: DateTime.fromSQL(order.created_at, { zone: 'utc' }).toISO(),
+      items
+    }
+  })
+
+  return processedOrders
 }

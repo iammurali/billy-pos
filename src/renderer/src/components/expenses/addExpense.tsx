@@ -31,12 +31,12 @@ const formSchema = z.object({
   title: z.string().min(2).max(50),
   description: z.string().min(2).max(50).optional(),
   amount: z.coerce.number({ message: 'Amount is required' }),
-  category: z.coerce.number({message: 'category is required'}),
+  category: z.coerce.number({ message: 'category is required' }),
   categoryName: z.string().optional()
 })
 
-export function AddExpense({ getExpenses }: {getExpenses: () => void}) {
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+export function AddExpense({ getExpenses }: { getExpenses: () => void }) {
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [categories, setCategories] = useState<ExpenseCategory[]>([])
 
   const [newCategory, setNewCategory] = useState('')
@@ -104,12 +104,11 @@ export function AddExpense({ getExpenses }: {getExpenses: () => void}) {
     if (result) {
       form.reset()
       getExpenses()
-      setIsSheetOpen(false);
+      setIsSheetOpen(false)
       toast('Expense added successfully', {
         position: 'top-center',
         duration: 1000
       })
-
     }
   }
 

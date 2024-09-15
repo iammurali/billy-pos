@@ -31,6 +31,7 @@ import { DraftBills } from './components/list-drafts-sheet'
 import { BilledBills } from './components/list-billed-sheet'
 import { Separator } from './ui/separator'
 import { AnimatePresence, motion } from 'framer-motion'
+import { MobileOrdersSheet } from './components/list-received-orders-sheet'
 
 // import { DiscountDialogButton } from './components/discount-dialog'
 
@@ -62,6 +63,7 @@ function App(): JSX.Element {
   // const [searchResults, setSearchResults] = useState<MenuItem[]>([])
   const [animatedRowId, setAnimatedRowId] = useState<number | null>(null)
   const [selectedItem, setSelectedItem] = useState<number | null>(null)
+  const [mobileOrders, setMobileOrders] = useState<any[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
 
   // const truncateData = async () => {
@@ -279,7 +281,7 @@ function App(): JSX.Element {
           position: 'top-center',
           duration: 1000
         })
-        // clearBill()
+        clearBill()
       } else {
         // save bill
         setBillId(null)
@@ -294,7 +296,7 @@ function App(): JSX.Element {
           position: 'top-center',
           duration: 1000
         })
-        // clearBill()
+        clearBill()
       }
     } catch (error) {
       console.error('Error saving bill:', error)
@@ -379,6 +381,51 @@ function App(): JSX.Element {
       console.log('error::', error)
     }
   }
+
+  const getMobileOrders = async () => {
+    try {
+      let result: any[] = await window.electron.ipcRenderer.invoke('getMobileOrders')
+      console.log(result, 'mobile orders')
+      if (result) {
+        setMobileOrders(result)
+      } else {
+        setMobileOrders([])
+      }
+    } catch (error) {
+      console.log('error fetching mobile orders:', error)
+    }
+  }
+
+  const handleAddToBilling = async (order: any) => {
+    const newBillItems = order.items.map((item: any) => ({
+      item: {
+        id: item.menu_item_id,
+        title: item.title,
+        price: item.price
+      },
+      quantity: item.quantity
+    }))
+
+    setBillItems([...billItems, ...newBillItems])
+
+    // Generate a new invoice number
+    const newInvoiceNumber = await window.electron.ipcRenderer.invoke('getLastInvoiceNumber')
+    const nextInvoiceNumber = String(Number(newInvoiceNumber) + 1)
+    setInvoiceNumber(nextInvoiceNumber)
+
+    // Update the order status and set the new invoice number
+    window.electron.ipcRenderer.invoke('updateOrderStatus', order.id, true, true, nextInvoiceNumber)
+      .then(() => {
+        // Refresh the mobile orders list
+        getMobileOrders()
+        toast.success(`Order #${order.order_number} added to billing with new invoice #${nextInvoiceNumber}`)
+      })
+      .catch((error) => {
+        console.error('Failed to update order status:', error)
+        toast.error('Failed to add order to billing')
+      })
+  }
+
 
   const restoreBill = (bill: Bill) => {
     console.log(bill, ':::::::::bill to restore')
@@ -531,6 +578,11 @@ function App(): JSX.Element {
                   draftBills={draftBills}
                   restoreDraft={restoreDraft}
                   deleteDraft={deleteDraft}
+                />
+                <MobileOrdersSheet
+                  onClickMobileOrders={getMobileOrders}
+                  mobileOrders={mobileOrders}
+                  onAddToBilling={handleAddToBilling}
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger>
@@ -726,7 +778,7 @@ function App(): JSX.Element {
                   variant={'default'}
                   onClick={() => saveDraft()}
                 >
-                  Save Draft
+                  Hold
                 </Button>
                 {/* <DiscountDialogButton /> */}
                 <Button
@@ -734,7 +786,7 @@ function App(): JSX.Element {
                   variant={'default'}
                   onClick={() => saveBill()}
                 >
-                  <Save size={16} className="mr-1" /> {billId ? 'Update' : 'Save'}
+                  <Save size={16} className="mr-1" /> {billId ? 'Update' : 'E-bill'}
                 </Button>
                 <Button
                   disabled={billItems.length === 0}

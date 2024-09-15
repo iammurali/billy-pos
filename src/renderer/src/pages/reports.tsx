@@ -83,7 +83,7 @@ const Reports: React.FC = () => {
       <div className="w-full border-l border-border">
         <div className="overflow-y-scroll h-full p-4">
           <h1 className="font-bold">REPORTS</h1>
-          <div className="flex flex-row gap-12 pt-4 justify-between">
+          <div className="flex flex-row gap-4 pt-4 justify-start">
             <NumberCardWithProgress
               title="This month sales"
               saleAmount={

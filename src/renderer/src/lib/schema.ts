@@ -50,3 +50,17 @@ interface Expense {
   created_at: string; // or Date if you parse it into a Date object
   category_name: string;
 }
+
+interface IOrderItem {
+  menu_item_id: number;
+  quantity: number;
+  price: number;
+}
+
+interface IOrder {
+  total_amount: number;
+  invoice_number: string;
+  sent_to_kitchen: boolean;
+  sent_for_billing: boolean;
+  items: IOrderItem[];
+}

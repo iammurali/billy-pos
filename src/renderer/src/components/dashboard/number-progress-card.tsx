@@ -14,7 +14,7 @@ export default function NumberCardWithProgress({
 }) {
   console.log(progress ? (progress / 100) * 100 : 0, 'Hello per')
   return (
-    <Card className="w-full">
+    <Card className='w-64'>
       <CardHeader className="pb-2">
         <CardDescription>{title ? title : 'This month sales'}</CardDescription>
         <CardTitle className="text-4xl">₹ {saleAmount ? saleAmount : 0}</CardTitle>

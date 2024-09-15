@@ -11,7 +11,7 @@ export interface IMenuItem {
   short_code: string | null | undefined // Assuming short_code can be nullable
 }
 
-interface IExpenseCategory {
-  id: number
-  name: string
-}
+// interface IExpenseCategory {
+//   id: number
+//   name: string
+// }
