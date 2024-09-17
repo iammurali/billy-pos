@@ -23,6 +23,10 @@ function createExpressApp(): express.Express {
     });
   });
 
+  app.get('/api/health', (req: express.Request, res: express.Response) => {
+    res.status(200).json({ status: 'healthy' });
+  });
+
   // API endpoint for menu items
   app.get('/api/menu-items', async (_req: express.Request, res: express.Response) => {
     try {
