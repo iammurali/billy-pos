@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { getMenuItems, saveOrder } from './db';
+import { networkInterfaces } from 'os';
 
 function createExpressApp(): express.Express {
   const app = express();
@@ -24,6 +25,7 @@ function createExpressApp(): express.Express {
   });
 
   app.get('/api/health', (req: express.Request, res: express.Response) => {
+    console.log(req, 'health req')
     res.status(200).json({ status: 'healthy' });
   });
 
@@ -81,10 +83,27 @@ function createExpressApp(): express.Express {
   return app;
 }
 
+
+
+function getIpaddress() {
+  const nets: any = networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+      if (net.family === 'IPv4' && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+
+  return null
+}
+
 function startExpressServer(app: express.Express): void {
   const PORT = 3000;
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
+  const ipAddress = getIpaddress() || '0.0.0.0'
+  app.listen(PORT, ipAddress, () => {
+    console.log(`Server running on http://${ipAddress}:${PORT}`);
   });
 }
 

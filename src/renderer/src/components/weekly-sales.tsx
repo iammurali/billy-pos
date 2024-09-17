@@ -1,15 +1,14 @@
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
   } from "@/ui/table"
-  
-  
-  
+
+
+
 export function WeeklySales({ sales }: { sales: { week: string; total_sales: number; }[] }) {
   return (
     <Table className="border">
@@ -29,8 +28,7 @@ export function WeeklySales({ sales }: { sales: { week: string; total_sales: num
           </TableRow>
         ))}
       </TableBody>
-    
+
     </Table>
   )
 }
-  

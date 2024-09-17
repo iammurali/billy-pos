@@ -6,30 +6,22 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/ui/dropdown-menu'
 import { useEffect, useRef, useState } from 'react'
-import SearchComponent from './components/search-component'
 import { cn } from './lib/utils'
 import {
-  ArrowDown,
-  ArrowUp,
   ChevronDown,
   Minus,
   Plus,
-  Printer,
   PrinterIcon,
   Save,
   Search,
   Trash2
 } from 'lucide-react'
 import { Input } from './ui/input'
-import { IMenuItem } from 'src/types/sharedTypes'
 import { DraftBills } from './components/list-drafts-sheet'
 import { BilledBills } from './components/list-billed-sheet'
-import { Separator } from './ui/separator'
 import { AnimatePresence, motion } from 'framer-motion'
 import { MobileOrdersSheet } from './components/list-received-orders-sheet'
 
@@ -455,7 +447,7 @@ function App(): JSX.Element {
     generateInvoiceNumber()
   }
 
-  const addDiscount = (discount: number) => {
+  const addDiscount = () => {
     // discount should be in percentage
     // setDiscount((discount / 100) * TotalAmount);
     setDiscountPercentage(10)
@@ -591,7 +583,7 @@ function App(): JSX.Element {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => addDiscount(10)}>Discount</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => addDiscount()}>Discount</DropdownMenuItem>
                     {/* <DropdownMenuItem>Billing</DropdownMenuItem> */}
                   </DropdownMenuContent>
                 </DropdownMenu>

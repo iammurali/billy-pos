@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
 
 export const Mobile: React.FC = () => {
   const [ipAddress, setIpAdress] = useState()

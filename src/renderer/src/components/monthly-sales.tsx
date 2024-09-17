@@ -1,15 +1,14 @@
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
   } from "@/ui/table"
-  
-  
-  
+
+
+
   export function MonthlySales({ sales }: { sales: any[] }) {
     return (
       <Table>
@@ -29,8 +28,7 @@ import {
             </TableRow>
           ))}
         </TableBody>
-      
+
       </Table>
     )
   }
-  

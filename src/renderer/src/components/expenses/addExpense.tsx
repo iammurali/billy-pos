@@ -173,7 +173,7 @@ export function AddExpense({ getExpenses }: { getExpenses: () => void }) {
               <FormField
                 control={form.control}
                 name="category"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <FormControl>
