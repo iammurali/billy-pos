@@ -71,3 +71,11 @@ CREATE TABLE order_items (
 
 -- Index for faster queries
 CREATE INDEX idx_order_items_order_id ON order_items (order_id);
+
+-- create restaurant tables
+CREATE TABLE IF NOT EXISTS restaurant_tables (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      capacity INTEGER NOT NULL,
+      status TEXT NOT NULL
+    );

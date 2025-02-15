@@ -493,9 +493,12 @@ app.whenReady().then(() => {
     return 'Unable to determine IP address';
   });
 
+  // IPC handlers for orders
+ ipcMain.handle('get-menu-items', async () => getMenuItems());
 
-  const expressApp = createExpressApp();
-  startExpressServer(expressApp);
+
+  const { app: expressApp, server } = createExpressApp();
+  startExpressServer(server);
 
   createWindow();
 
