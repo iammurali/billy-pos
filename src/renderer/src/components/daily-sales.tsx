@@ -1,15 +1,14 @@
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
   } from "@/ui/table"
-  
-  
-  
+
+
+
 export function DailySales({ sales }: { sales: { date: string; total_sales: number; day_name: string }[] }) {
   return (
     <Table className="border">
@@ -31,8 +30,7 @@ export function DailySales({ sales }: { sales: { date: string; total_sales: numb
           </TableRow>
         ))}
       </TableBody>
-    
+
     </Table>
   )
 }
-  

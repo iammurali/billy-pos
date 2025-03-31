@@ -48,7 +48,7 @@ export function EditMenu({
       description: item.description,
       price: item.price,
       category: item.category_id,
-      short_code: item.short_code
+      short_code: item.short_code as string | undefined
     }
   })
 

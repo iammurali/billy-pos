@@ -1,8 +1,6 @@
-import React from 'react'
 import { Button } from '@/ui/button'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -10,9 +8,8 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/ui/sheet'
-import { DateTime } from 'luxon'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/ui/table'
-import { Smartphone, Clock, Check, X, PlusCircle } from 'lucide-react'
+import { Smartphone, Check, X, PlusCircle } from 'lucide-react'
 
 interface MobileOrder {
   id: string;
@@ -36,17 +33,17 @@ interface MobileOrdersSheetProps {
 }
 
 export function MobileOrdersSheet({ mobileOrders, onClickMobileOrders, onAddToBilling }: MobileOrdersSheetProps) {
-  const formatRelativeTime = (isoString: string) => {
-    const orderTime = DateTime.fromISO(isoString);
-    const now = DateTime.local();
-    const diff = now.diff(orderTime, ['hours', 'minutes']);
+  // const formatRelativeTime = (isoString: string) => {
+  //   const orderTime = DateTime.fromISO(isoString);
+  //   const now = DateTime.local();
+  //   const diff = now.diff(orderTime, ['hours', 'minutes']);
 
-    if (diff.hours >= 1) {
-      return `${Math.floor(diff.hours)} hour${diff.hours >= 2 ? 's' : ''} ago`;
-    } else {
-      return `${Math.floor(diff.minutes)} minute${diff.minutes !== 1 ? 's' : ''} ago`;
-    }
-  };
+  //   if (diff.hours >= 1) {
+  //     return `${Math.floor(diff.hours)} hour${diff.hours >= 2 ? 's' : ''} ago`;
+  //   } else {
+  //     return `${Math.floor(diff.minutes)} minute${diff.minutes !== 1 ? 's' : ''} ago`;
+  //   }
+  // };
 
   return (
     <Sheet>

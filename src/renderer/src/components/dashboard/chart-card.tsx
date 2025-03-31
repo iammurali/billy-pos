@@ -1,4 +1,4 @@
-import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
+import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts'
 
 export function ChartCard({data}: {data: any[]}) {
   return (

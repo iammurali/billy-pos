@@ -4,7 +4,6 @@ import NumberCardWithProgress from '@renderer/components/dashboard/number-progre
 import { MonthlySales } from '@renderer/components/monthly-sales'
 import { WeeklySales } from '@renderer/components/weekly-sales'
 import React, { useEffect, useState } from 'react'
-import { number } from 'zod'
 
 const Reports: React.FC = () => {
   const [totalSalesForEachMonth, settotalSalesForEachMonth] = useState([])

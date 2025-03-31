@@ -225,18 +225,26 @@ import { createExpressApp, startExpressServer } from './server'
 
 async function printBill(billItems: BillItem[], totalAmount: number): Promise<void> {
   console.log('event from frontend::::', billItems, totalAmount);
-  const imagePath = path.join(app.getAppPath(), 'src', 'renderer', 'src', 'assets', 'coffeehouselogo.jpg');
-  const qrPath = path.join(app.getAppPath(), 'src', 'renderer', 'src', 'assets', 'googlepayqr.jpeg');
+  console.log('imagepath:'+ path.join(process.resourcesPath, 'data/googlepayqr.jpeg'))
+
+  const imagePath = process.env.NODE_ENV === 'development'
+  ? path.join(app.getAppPath(), 'src', 'renderer', 'src', 'assets', 'coffeehouselogo.jpg')
+  : path.join(process.resourcesPath, 'data/coffeehouselogo.jpg');
+
+  const qrPath = process.env.NODE_ENV === 'development'
+  ? path.join(app.getAppPath(), 'src', 'renderer', 'src', 'assets', 'googlepayqr.jpeg')
+  : path.join(process.resourcesPath, 'data/googlepayqr.jpeg')
+
   const options: PosPrintOptions = {
-    preview: true,
+    // preview: true,
     margin: '0 0 0 0',
     copies: 1,
     timeOutPerLine: 800,
     pageSize: '80mm',
     boolean: undefined,
     // dpi: {
-    //   horizontal: 203,
-    //   vertical:  203
+    //   horizontal: 153,
+    //   vertical:  153
     // }
     // width: '80mm', // Set a specific width for better control
   };
@@ -245,8 +253,8 @@ async function printBill(billItems: BillItem[], totalAmount: number): Promise<vo
       type: 'image',
       path: imagePath,
       position: 'center',
-      width: '120px',
-      height: '120px',
+      width: '150px',
+      height: '150px',
     },
     {
       type: 'text',
@@ -270,17 +278,17 @@ async function printBill(billItems: BillItem[], totalAmount: number): Promise<vo
         {
           type: 'text',
           value: item.quantity.toString(),
-          style: { textAlign: 'center', fontSize: '9px' },
+          style: {  fontWeight: 'bold', textAlign: 'center', fontSize: '9px' },
         },
         {
           type: 'text',
           value: item.item.price.toFixed(2),
-          style: { textAlign: 'right', fontSize: '9px' },
+          style: { fontWeight: 'bold', textAlign: 'right', fontSize: '9px' },
         },
         {
           type: 'text',
           value: (item.item.price * item.quantity).toFixed(2),
-          style: { textAlign: 'right', fontSize: '9px' },
+          style: { fontWeight: 'bold', textAlign: 'right', fontSize: '9px' },
         },
       ]),
       tableFooter: ['', '', 'Total:', totalAmount.toFixed(2)],

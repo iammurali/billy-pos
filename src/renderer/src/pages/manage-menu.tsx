@@ -30,7 +30,7 @@ const formSchema = z.object({
 const ManageMenu: React.FC = () => {
   const [menuItems, setMenuItems] = useState<IMenuItem[]>([])
   // const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
   const [filteredData, setFilteredData] = useState<IMenuItem[]>([])
 
   useEffect(() => {
