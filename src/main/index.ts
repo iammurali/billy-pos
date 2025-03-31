@@ -27,7 +27,6 @@ import {
   updateOrderStatus
 } from './db'
 import { IMenuItem } from './types/sharedTypes'
-import { createExpressApp, startExpressServer } from './server'
 
 // async function printBill(billItems: BillItem[], totalAmount: number): Promise<void> {
 //   console.log('event from frontend::::', billItems, totalAmount)
@@ -505,8 +504,8 @@ app.whenReady().then(() => {
  ipcMain.handle('get-menu-items', async () => getMenuItems());
 
 
-  const { app: expressApp, server } = createExpressApp();
-  startExpressServer(server);
+  // const { app: expressApp, server } = createExpressApp();
+  // startExpressServer(server);
 
   createWindow();
 

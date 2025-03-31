@@ -1,20 +1,7 @@
 import { useEffect, useState } from 'react'
 
 export const Mobile: React.FC = () => {
-  const [ipAddress, setIpAdress] = useState()
-
-
-  useEffect(() => {
-    getExpenseAmount()
-  }, [])
-
-  const getExpenseAmount = async () => {
-    const apiIp = await window.electron.ipcRenderer.invoke('get-ip-address')
-    console.log(apiIp, 'Hey this is your ip address')
-    setIpAdress(apiIp)
-  }
-
-
+  useEffect(() => {}, [])
 
   return (
     <div className={`flex w-full flex-row`} style={{ height: 'calc(100% - 1.75rem)' }}>
@@ -24,7 +11,7 @@ export const Mobile: React.FC = () => {
             <h1 className="font-bold">Mobile App</h1>
           </div>
           <div>
-            Mobile Api URL: {ipAddress}
+            Coming soon...
           </div>
         </div>
       </div>
