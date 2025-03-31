@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3'
 import { IMenuItem } from '../types/sharedTypes'
+import fs from 'fs'
 import path from 'path'
 import { app } from 'electron/main'
 import { DateTime } from 'luxon'
@@ -13,10 +14,37 @@ const dbPath =
 
 console.log(dbPath, 'DB PATH:::::::')
 
+if (!fs.existsSync(dbPath)) {
+  const userDataPath = app.getPath('userData')
+  const backupPath = path.join(userDataPath, 'coffeehouse_backup.db')
+
+  if (fs.existsSync(backupPath)) {
+    fs.copyFileSync(backupPath, dbPath)
+    console.log(`Database restored from backup at ${backupPath}`)
+  } else {
+    const templateDbPath = path.join(process.resourcesPath, 'data/coffeehouse_template.db')
+    fs.copyFileSync(templateDbPath, dbPath)
+    console.log(`Initialized new database from template at ${dbPath}`)
+  }
+}
+
 const db = new Database(dbPath, { fileMustExist: true })
 
 db.pragma('journal_mode = WAL')
 let i = 0
+
+
+export const backupDatabase = () => {
+  try {
+    const userDataPath = app.getPath('userData')
+    const backupPath = path.join(userDataPath, 'billy_backup.db')
+    fs.copyFileSync(dbPath, backupPath)
+    console.log(`Database backed up to ${backupPath}`)
+  } catch (error) {
+    console.error('Error backing up the database:', error)
+    throw error
+  }
+}
 
 export const getMenuItems = (): IMenuItem[] => {
   try {
