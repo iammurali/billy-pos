@@ -17,6 +17,7 @@ import { IMenuItem } from 'src/types/sharedTypes'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { EditMenu } from '@renderer/components/edit-sheet'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const formSchema = z.object({
   title: z.string().min(2).max(50),
@@ -29,7 +30,7 @@ const formSchema = z.object({
 const ManageMenu: React.FC = () => {
   const [menuItems, setMenuItems] = useState<IMenuItem[]>([])
   // const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
   const [filteredData, setFilteredData] = useState<IMenuItem[]>([])
 
   useEffect(() => {
@@ -104,132 +105,141 @@ const ManageMenu: React.FC = () => {
   }
 
   return (
-    <div className={`flex w-full flex-row`} style={{ height: 'calc(100% - 1.75rem)' }}>
-      <div className="w-1/4 border-r border-border h-full">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-1 p-8">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Item Name" {...field} />
-                  </FormControl>
-                  <FormDescription>This is your menu item name.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Description" {...field} />
-                  </FormControl>
-                  <FormDescription>This is your menu item description.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Price</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Price" {...field} />
-                  </FormControl>
-                  <FormDescription>This is your menu item price.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Category" {...field} />
-                  </FormControl>
-                  <FormDescription>This is your menu item category.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="short_code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>short code</FormLabel>
-                  <FormControl>
-                    <Input placeholder="short code" {...field} />
-                  </FormControl>
-                  <FormDescription>This is shortcode.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit">Submit</Button>
-          </form>
-        </Form>
-      </div>
-      <div className="w-3/4 border-l border-border">
-        <div className="overflow-y-scroll h-full">
-          <h1 className="pl-5 pt-4 font-bold">Menu Items</h1>
-          <div className="px-4 pt-4">
-            <Input
-              className="w-full p-6 border border-border rounded-none"
-              type="search"
-              placeholder="Press space to start search or click on the input box"
-              onChange={(e) => searchItem(e.target.value)}
-            />
-          </div>
-          <ul className="p-4">
-            <li
-              className="p-2 border-b border-border flex items-center justify-between bg-gray-300"
-            >
-              <div className="text-sm w-[53%]">{'Item Name'}</div>
-              <div className="text-sm">{'Price'}</div>
-              <div className="text-sm">{'Category'}</div>
-              <div className="text-sm">{'Short code'}</div>
-              <div className="text-sm">
-                {/* <AddMenu getMenuItems={getMenuItems} /> */}
-                Actions
-              </div>
-            </li>
-            {filteredData.map((item) => (
-              <li
-                key={item.id}
-                className="p-2 border-b border-border flex items-center justify-between"
-              >
-                <div className="font-medium w-[50%]">{item.title}</div>
-                <div className="">Rs:{item.price}</div>
-                <div>{item.category_id}</div>
-                <div>{item.short_code ? item.short_code : 'N/A'}</div>
-                <div className="flex flex-row justify-end space-x-2">
-                  <EditMenu getMenuItems={getMenuItems} item={item} />
-                  <button
-                    onClick={() => deleteMenuItem(item.id)}
-                    className="p-1.5 rounded-sm bg-secondary hover:bg-danger-foreground"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+    <AnimatePresence mode="sync" initial={true}>
+      <motion.div
+        initial={{ y: 10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 10, opacity: 0 }}
+        transition={{
+          type: 'tween',
+        }}
+        className={`flex w-full flex-row`}
+        style={{ height: 'calc(100% - 1.75rem)' }}
+      >
+        {filteredData && <div className="w-1/4 border-r border-border h-full">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-1 p-8">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Item Name" {...field} />
+                    </FormControl>
+                    <FormDescription>This is your menu item name.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Description" {...field} />
+                    </FormControl>
+                    <FormDescription>This is your menu item description.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="Price" {...field} />
+                    </FormControl>
+                    <FormDescription>This is your menu item price.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="Category" {...field} />
+                    </FormControl>
+                    <FormDescription>This is your menu item category.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="short_code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>short code</FormLabel>
+                    <FormControl>
+                      <Input placeholder="short code" {...field} />
+                    </FormControl>
+                    <FormDescription>This is shortcode.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">Submit</Button>
+            </form>
+          </Form>
+        </div>}
+        <div className="w-3/4 border-l border-border">
+          <div className="overflow-y-scroll h-full">
+            <h1 className="pl-5 pt-4 font-bold">Menu Items</h1>
+            <div className="px-4 pt-4">
+              <Input
+                className="w-full p-6 border border-border rounded-none"
+                type="search"
+                placeholder="Press space to start search or click on the input box"
+                onChange={(e) => searchItem(e.target.value)}
+              />
+            </div>
+            <ul className="p-4">
+              <li className="p-2 border-b border-border flex items-center justify-between dark:bg-gray-800">
+                <div className="text-sm w-[53%]">{'Item Name'}</div>
+                <div className="text-sm">{'Price'}</div>
+                <div className="text-sm">{'Category'}</div>
+                <div className="text-sm">{'Short code'}</div>
+                <div className="text-sm">
+                  {/* <AddMenu getMenuItems={getMenuItems} /> */}
+                  Actions
                 </div>
               </li>
-            ))}
-          </ul>
+              {filteredData.map((item) => (
+                <li
+                  key={item.id}
+                  className="p-2 border-b border-border flex items-center justify-between"
+                >
+                  <div className="font-medium w-[50%]">{item.title}</div>
+                  <div className="">Rs:{item.price}</div>
+                  <div>{item.category_id}</div>
+                  <div>{item.short_code ? item.short_code : 'N/A'}</div>
+                  <div className="flex flex-row justify-end space-x-2">
+                    <EditMenu getMenuItems={getMenuItems} item={item} />
+                    <button
+                      onClick={() => deleteMenuItem(item.id)}
+                      className="p-1.5 rounded-sm bg-secondary hover:bg-danger-foreground"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </AnimatePresence>
   )
 }
 

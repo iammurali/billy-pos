@@ -29,3 +29,8 @@ interface Bill {
   invoice_number: string
   items: BillItem[]
 }
+
+interface ExpenseCategory {
+  id: number
+  name: string
+}

@@ -9,7 +9,7 @@ const SearchComponent = ({
   addItemToBill
 }: {
   data: MenuItem[]
-  addItemToBill: (item: IMenuItem) => void
+  addItemToBill: (item: IMenuItem, quantity: number) => void
 }): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<MenuItem[]>([])
@@ -66,7 +66,7 @@ const SearchComponent = ({
     setSelectedItem(index)
     // Optionally, you can perform some action when an item is selected
     console.log('Selected Item:', searchResults[index])
-    addItemToBill(searchResults[index] as IMenuItem)
+    addItemToBill(searchResults[index] as IMenuItem, 1)
     setSearchTerm('')
     setSelectedItem(0)
   }
@@ -102,7 +102,7 @@ const SearchComponent = ({
       <div className="relative ml-auto flex-1 md:grow-0">
       <Search className="absolute left-2.5 top-4 h-4 w-4 text-primary" />
       <Input
-        
+
         className="w-full px-8 py-6 border border-border rounded-none"
         type="search"
         placeholder="Press space to start search or click on the input box"

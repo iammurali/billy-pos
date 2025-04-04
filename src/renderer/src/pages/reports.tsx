@@ -4,7 +4,6 @@ import NumberCardWithProgress from '@renderer/components/dashboard/number-progre
 import { MonthlySales } from '@renderer/components/monthly-sales'
 import { WeeklySales } from '@renderer/components/weekly-sales'
 import React, { useEffect, useState } from 'react'
-import { number } from 'zod'
 
 const Reports: React.FC = () => {
   const [totalSalesForEachMonth, settotalSalesForEachMonth] = useState([])
@@ -82,8 +81,8 @@ const Reports: React.FC = () => {
       {/* <div className="w-1/4 border-r border-border h-full">HELLO WORLD</div> */}
       <div className="w-full border-l border-border">
         <div className="overflow-y-scroll h-full p-4">
-          <h1 className="pt-4 font-bold">REPORTS</h1>
-          <div className="flex flex-row gap-12 pt-4 justify-between">
+          <h1 className="font-bold">REPORTS</h1>
+          <div className="flex flex-row gap-4 pt-4 justify-start">
             <NumberCardWithProgress
               title="This month sales"
               saleAmount={

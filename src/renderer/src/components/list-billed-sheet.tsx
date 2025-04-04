@@ -1,9 +1,6 @@
 import { Button } from '@/ui/button'
-import { Input } from '@/ui/input'
-import { Label } from '@/ui/label'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -48,7 +45,7 @@ export function BilledBills({
               <div className="flex flex-row justify-between items-center bg-secondary">
                 <div className="pr-2 flex flex-col">
                   <p className='text-sm'>{bill.invoice_number}</p>
-                  <p className='text-xs text-muted-foreground'>{dayjs.utc(bill.date, 'YYYY-MM-DD').format('DD/MM/YYYY hh:mm a')}</p>
+                  <p className='text-xs text-muted-foreground'>{dayjs.utc(bill.created_at, 'YYYY-MM-DD').format('DD/MM/YYYY hh:mm a')}</p>
                 </div>
                 <div>
                   <Button

@@ -1,7 +1,9 @@
 import Database from 'better-sqlite3'
 import { IMenuItem } from '../types/sharedTypes'
+import fs from 'fs'
 import path from 'path'
 import { app } from 'electron/main'
+import { DateTime } from 'luxon'
 
 console.log(process.resourcesPath, 'resourcepath', app.getAppPath())
 
@@ -12,10 +14,37 @@ const dbPath =
 
 console.log(dbPath, 'DB PATH:::::::')
 
+if (!fs.existsSync(dbPath)) {
+  const userDataPath = app.getPath('userData')
+  const backupPath = path.join(userDataPath, 'coffeehouse_backup.db')
+
+  if (fs.existsSync(backupPath)) {
+    fs.copyFileSync(backupPath, dbPath)
+    console.log(`Database restored from backup at ${backupPath}`)
+  } else {
+    const templateDbPath = path.join(process.resourcesPath, 'data/coffeehouse_template.db')
+    fs.copyFileSync(templateDbPath, dbPath)
+    console.log(`Initialized new database from template at ${dbPath}`)
+  }
+}
+
 const db = new Database(dbPath, { fileMustExist: true })
 
 db.pragma('journal_mode = WAL')
 let i = 0
+
+
+export const backupDatabase = () => {
+  try {
+    const userDataPath = app.getPath('userData')
+    const backupPath = path.join(userDataPath, 'billy_backup.db')
+    fs.copyFileSync(dbPath, backupPath)
+    console.log(`Database backed up to ${backupPath}`)
+  } catch (error) {
+    console.error('Error backing up the database:', error)
+    throw error
+  }
+}
 
 export const getMenuItems = (): IMenuItem[] => {
   try {
@@ -195,7 +224,7 @@ export const getBillsWithBillItems = async () => {
   try {
     // get all bills with bill items i only want the last 10 bills
 
-    const query = `SELECT * FROM bills JOIN bill_items ON bills.id = bill_items.bill_id JOIN menu_item ON bill_items.menu_item_id = menu_item.id`
+    const query = `SELECT b.*, bi.*, mi.* FROM bills b INNER JOIN bill_items bi ON b.id = bi.bill_id INNER JOIN menu_item mi ON bi.menu_item_id = mi.id ORDER BY b.created_at DESC LIMIT 50;`
     const readQuery = db.prepare(query)
     const rowList = readQuery.all()
     console.log(rowList, 'Get all bills::')
@@ -228,14 +257,14 @@ export const getLastInvoiceNumber = async () => {
 export const getSalesForThisMonth = async () => {
   try {
     const query = `
-  SELECT 
+  SELECT
     strftime('%Y-%m', created_at) AS month,
     SUM(total_amount) AS total_sales
-  FROM 
+  FROM
     bills
-  WHERE 
+  WHERE
     created_at >= date('now', '-12 months')
-  GROUP BY 
+  GROUP BY
     month
   ORDER BY
     month DESC;
@@ -253,7 +282,7 @@ export const getSalesForThisMonth = async () => {
 export const getDailySales = async () => {
   try {
     const query = `
-    SELECT 
+    SELECT
     strftime('%Y-%m-%d', created_at) AS date,
     strftime('%w', created_at) AS day_number,
     CASE strftime('%w', created_at)
@@ -266,11 +295,11 @@ export const getDailySales = async () => {
       WHEN '6' THEN 'Saturday'
     END AS day_name,
     SUM(total_amount) AS total_sales
-  FROM 
+  FROM
     bills
-  WHERE 
+  WHERE
     date(created_at) >= date('now', '-20 days')
-  GROUP BY 
+  GROUP BY
     date
   ORDER BY
     date DESC;
@@ -288,14 +317,14 @@ export const getDailySales = async () => {
 export const getSalesForLast8weeks = async () => {
   try {
     const query = `
-  SELECT 
+  SELECT
     strftime('%Y-%W', created_at) AS week,
     SUM(total_amount) AS total_sales
-  FROM 
+  FROM
     bills
-  WHERE 
+  WHERE
     created_at >= datetime('now', '-56 days')
-  GROUP BY 
+  GROUP BY
     week
   ORDER BY
     week DESC;
@@ -340,4 +369,312 @@ ORDER BY
     console.error(error, 'Error getting distinct items sold and their count and sum::')
     throw error
   }
+}
+
+export const getExpenseCategories = async () => {
+  try {
+    const query = `
+  SELECT
+    id,
+    name
+  FROM
+    expense_categories;
+`
+    const readQuery = db.prepare(query)
+    const rowList = readQuery.all()
+    console.log(rowList, 'Get expense categories')
+    return rowList
+  } catch (error) {
+    console.error(error, 'Error getting expense categories')
+    throw error
+  }
+}
+
+export const addExpenseCategory = async (name: string) => {
+  try {
+    const insertQuery = db.prepare(`INSERT INTO expense_categories (name) VALUES (?)`)
+    const result = insertQuery.run(name)
+    return result
+  } catch (error) {
+    console.error(error, 'Add expense category::')
+    throw error
+  }
+}
+
+export const addMenuItemCategory = async (name: string) => {
+  try {
+    const insertQuery = db.prepare(`INSERT INTO categories (name) VALUES (?)`)
+    const result = insertQuery.run(name)
+    return result
+  } catch (error) {
+    console.error(error, 'Add menu item category::')
+    throw error
+  }
+}
+
+export const addExpense = async (
+  title: string,
+  category_id: number,
+  description: string,
+  amount: number
+) => {
+  try {
+    const insertQuery = db.prepare(
+      `INSERT INTO expenses (title,category_id, description, amount) VALUES (?,?,?,?);`
+    )
+    const result = insertQuery.run(title, category_id, description, amount)
+    return result
+  } catch (error) {
+    console.error(error, 'Add expense::')
+    throw error
+  }
+}
+
+export const deleteExpenseById = async (id: string) => {
+  try {
+    const insertQuery = db.prepare(`DELETE FROM expenses WHERE id = ?;`)
+    const result = insertQuery.run(id)
+    return result
+  } catch (error) {
+    console.error(error, 'Add expense::')
+    throw error
+  }
+}
+
+export const getExpenses = async () => {
+  try {
+    const query = `
+  SELECT
+  expenses.id,
+  expenses.title,
+  expenses.description,
+  expenses.amount,
+  expenses.created_at,
+  expense_categories.name AS category_name
+FROM
+  expenses
+JOIN
+  expense_categories
+ON
+  expenses.category_id = expense_categories.id;
+`
+    const readQuery = db.prepare(query)
+    const rowList = readQuery.all()
+    console.log(rowList, 'Get expense categories')
+    return rowList
+  } catch (error) {
+    console.error(error, 'Error getting expense categories')
+    throw error
+  }
+}
+
+export const getExpensesByFilter = async (type: 'today' | 'week' | 'month') => {
+  try {
+    let condition
+    if (type == 'today') {
+      condition = `DATE(expenses.created_at) = DATE('now');`
+    }
+    if (type == 'week') {
+      condition = `DATE(expenses.created_at) >= DATE('now', 'weekday 0', '-6 days')
+    AND DATE(expenses.created_at) <= DATE('now', 'weekday 0', '+0 days');`
+    }
+    if (type == 'month') {
+      condition = `strftime('%Y-%m', expenses.created_at) = strftime('%Y-%m', 'now');`
+    }
+
+    const query = `
+      SELECT
+        expenses.id,
+        expenses.title,
+        expenses.description,
+        expenses.amount,
+        expenses.created_at,
+        expense_categories.name AS category_name
+    FROM
+      expenses
+    JOIN
+      expense_categories
+    ON
+      expenses.category_id = expense_categories.id
+    WHERE
+    ${condition}
+  `
+    const readQuery = db.prepare(query)
+    const rowList = readQuery.all()
+    console.log(rowList, 'Get expense categories')
+    return rowList
+  } catch (error) {
+    console.error(error, 'Error getting expense categories')
+    throw error
+  }
+}
+
+export const getTotalSpentByFilter = async (type: 'today' | 'week' | 'month') => {
+  try {
+    let condition
+    if (type == 'today') {
+      condition = `DATE(expenses.created_at) = DATE('now');`
+    }
+    if (type == 'week') {
+      condition = `DATE(expenses.created_at) >= DATE('now', 'weekday 0', '-6 days')
+    AND DATE(expenses.created_at) <= DATE('now', 'weekday 0', '+0 days');`
+    }
+    if (type == 'month') {
+      condition = `strftime('%Y-%m', expenses.created_at) = strftime('%Y-%m', 'now');`
+    }
+    const query = `
+      SELECT
+      SUM(amount) AS total_amount
+      FROM
+        expenses
+      WHERE
+      ${condition}
+  `
+    console.log(query)
+    const readQuery = db.prepare(query)
+    const rowList = readQuery.all()
+    console.log(rowList, type)
+    return rowList
+  } catch (error) {
+    console.error(error, 'Error getting expense total')
+    throw error
+  }
+}
+
+interface IOrderItem {
+  menu_item_id: number
+  quantity: number
+  price: number
+}
+
+interface IOrder {
+  total_amount: number
+  order_number: string
+  invoice_number: string | null
+  sent_to_kitchen: boolean
+  sent_for_billing: boolean
+  items: IOrderItem[]
+}
+
+export const saveOrder = (order: IOrder) => {
+  const insertOrderQuery = db.prepare(`
+    INSERT INTO orders (order_number, total_amount, sent_to_kitchen, sent_for_billing)
+    VALUES (?, ?, ?, ?)
+  `)
+
+  const insertOrderItemQuery = db.prepare(`
+    INSERT INTO order_items (order_id, menu_item_id, quantity, price)
+    VALUES (?, ?, ?, ?)
+  `)
+
+  const transaction = db.transaction((order: IOrder) => {
+    const orderResult = insertOrderQuery.run(
+      order.order_number,
+      order.total_amount,
+      order.sent_to_kitchen ? 1 : 0,
+      order.sent_for_billing ? 1 : 0
+    )
+    const orderId = orderResult.lastInsertRowid
+
+    for (const item of order.items) {
+      insertOrderItemQuery.run(orderId, item.menu_item_id, item.quantity, item.price)
+    }
+
+    return orderId
+  })
+
+  return transaction(order)
+}
+
+// Function to get an order by id
+export const getOrderById = (orderId: number) => {
+  const orderQuery = db.prepare(`
+    SELECT * FROM orders WHERE id = ?
+  `)
+
+  const orderItemsQuery = db.prepare(`
+    SELECT * FROM order_items WHERE order_id = ?
+  `)
+
+  const order = orderQuery.get(orderId)
+  if (!order) return null
+
+  const orderItems = orderItemsQuery.all(orderId)
+
+  return { ...order, items: orderItems }
+}
+
+export const updateOrderStatus = (
+  orderId: number,
+  sentToKitchen: boolean,
+  sentForBilling: boolean,
+  invoiceNumber: string | null = null
+) => {
+  const updateQuery = db.prepare(`
+    UPDATE orders
+    SET sent_to_kitchen = ?,
+        sent_for_billing = ?,
+        invoice_number = COALESCE(?, invoice_number),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `)
+
+  try {
+    const result = updateQuery.run(
+      sentToKitchen ? 1 : 0,
+      sentForBilling ? 1 : 0,
+      invoiceNumber,
+      orderId
+    )
+    console.log(`Order ${orderId} status updated. Changes: ${result.changes}`)
+    return result.changes > 0
+  } catch (error) {
+    console.error('Error updating order status:', error)
+    throw error
+  }
+}
+
+export const getAllOrders = () => {
+  const ordersQuery = db.prepare(`
+    SELECT
+      o.id,
+      o.order_number,
+      o.total_amount,
+      o.sent_to_kitchen,
+      o.sent_for_billing,
+      datetime(o.created_at) as created_at,
+      GROUP_CONCAT(mi.id || ',' || oi.quantity || ',' || oi.price || ',' || mi.title, '|') as items_data
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN menu_item mi ON oi.menu_item_id = mi.id
+    GROUP BY o.id
+    ORDER BY o.created_at DESC
+  `)
+
+  const orders = ordersQuery.all()
+  console.log(orders, 'ALL ORDERS')
+
+  const processedOrders = orders.map((order: any) => {
+    const items = order.items_data.split('|').map((item) => {
+      const [menu_item_id, quantity, price, title] = item.split(',')
+      return {
+        menu_item_id: parseInt(menu_item_id),
+        quantity: parseInt(quantity),
+        price: parseFloat(price),
+        title
+      }
+    })
+
+    return {
+      id: order.id,
+      order_number: order.order_number,
+      total_amount: order.total_amount,
+      sent_to_kitchen: Boolean(order.sent_to_kitchen),
+      sent_for_billing: Boolean(order.sent_for_billing),
+      created_at: DateTime.fromSQL(order.created_at, { zone: 'utc' }).toISO(),
+      items
+    }
+  })
+
+  return processedOrders
 }
